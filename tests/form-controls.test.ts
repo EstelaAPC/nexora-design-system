@@ -1,6 +1,7 @@
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { NxCheckbox } from '../packages/components/src/checkbox/checkbox';
+import type { NxInput } from '../packages/components/src/input/input';
 import type { NxRadio } from '../packages/components/src/radio/radio';
 import type { NxSwitch } from '../packages/components/src/switch/switch';
 import type { NxTextarea } from '../packages/components/src/textarea/textarea';
@@ -27,6 +28,58 @@ async function expectAccessible(element: HTMLElement): Promise<void> {
   });
   expect(result.violations.map(({ id, help }) => `${id}: ${help}`)).toEqual([]);
 }
+
+describe('nx-input form integration', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it('passes required, type, minlength, maxlength, and custom validity checks to ElementInternals', async () => {
+    const element = mount<NxInput>('nx-input', {
+      label: 'Email',
+      name: 'email',
+      type: 'email',
+      value: '',
+      required: true,
+      minlength: 6,
+      maxlength: 40
+    });
+    await settle(element);
+    const control = element.shadowRoot?.querySelector('input');
+    expect(control?.required).toBe(true);
+    expect(control?.minLength).toBe(6);
+    expect(control?.maxLength).toBe(40);
+    expect(element.checkValidity()).toBe(false);
+    expect(element.validity.valueMissing).toBe(true);
+
+    element.value = 'not-an-email';
+    await settle(element);
+    expect(element.validity.typeMismatch).toBe(true);
+    expect(element.checkValidity()).toBe(false);
+
+    element.value = 'person@example.com';
+    await settle(element);
+    expect(element.checkValidity()).toBe(true);
+    element.setCustomValidity('Email needs review.');
+    expect(element.validity.customError).toBe(true);
+    expect(element.validationMessage).toBe('Email needs review.');
+    expect(element.reportValidity()).toBe(false);
+  });
+
+  it('restores its initial value when its form resets', async () => {
+    const element = mount<NxInput>('nx-input', {
+      label: 'Email',
+      name: 'email',
+      value: 'initial@example.com'
+    });
+    await settle(element);
+    element.value = 'changed@example.com';
+    await settle(element);
+
+    element.formResetCallback();
+
+    expect(element.value).toBe('initial@example.com');
+    expect(element.shadowRoot?.querySelector('input')?.value).toBe('initial@example.com');
+  });
+});
 
 describe('nx-textarea', () => {
   afterEach(() => document.body.replaceChildren());
@@ -121,6 +174,45 @@ describe('nx-textarea', () => {
     });
     await expectAccessible(element);
   });
+
+  it('updates ElementInternals validity and supports a custom validation message', async () => {
+    const form = document.createElement('form');
+    const element = mount<NxTextarea>('nx-textarea', {
+      label: 'Required note',
+      name: 'note',
+      required: true
+    });
+    form.append(element);
+    await settle(element);
+
+    expect(element.checkValidity()).toBe(false);
+    expect(element.validity.valueMissing).toBe(true);
+    expect(element.reportValidity()).toBe(false);
+
+    element.value = 'Valid note';
+    await settle(element);
+    expect(element.checkValidity()).toBe(true);
+    element.setCustomValidity('Review this note.');
+    expect(element.checkValidity()).toBe(false);
+    expect(element.validationMessage).toBe('Review this note.');
+    element.setCustomValidity('');
+    await settle(element);
+    expect(element.checkValidity()).toBe(true);
+  });
+
+  it('restores its initial value through formResetCallback', async () => {
+    const form = document.createElement('form');
+    const element = mount<NxTextarea>('nx-textarea', { label: 'Message', value: 'Initial' });
+    form.append(element);
+    await settle(element);
+    element.value = 'Changed';
+    await settle(element);
+
+    element.formResetCallback();
+
+    expect(element.value).toBe('Initial');
+    expect(element.shadowRoot?.querySelector('textarea')?.value).toBe('Initial');
+  });
 });
 
 describe('nx-checkbox', () => {
@@ -184,6 +276,25 @@ describe('nx-checkbox', () => {
     expect(element.shadowRoot?.querySelector('input')?.getAttribute('type')).toBe('checkbox');
     await expectAccessible(element);
   });
+
+  it('sets required validity and restores default checked state on reset', async () => {
+    const element = mount<NxCheckbox>('nx-checkbox', {
+      name: 'accepted',
+      label: 'Accept',
+      value: 'yes',
+      required: true
+    });
+    await settle(element);
+    expect(element.checkValidity()).toBe(false);
+    expect(element.validity.valueMissing).toBe(true);
+
+    element.checked = true;
+    await settle(element);
+    expect(element.checkValidity()).toBe(true);
+    element.checked = false;
+    element.formResetCallback();
+    expect(element.checked).toBe(false);
+  });
 });
 
 describe('nx-radio', () => {
@@ -244,6 +355,21 @@ describe('nx-radio', () => {
     expect(disabled.shadowRoot?.querySelector('input')?.disabled).toBe(true);
   });
 
+  it('validates a required group and resets to the originally selected radio', async () => {
+    const [email, phone] = [
+      mount<NxRadio>('nx-radio', { label: 'Email', name: 'required-contact', value: 'email', required: true, checked: true }),
+      mount<NxRadio>('nx-radio', { label: 'Phone', name: 'required-contact', value: 'phone' })
+    ];
+    await Promise.all([settle(email), settle(phone)]);
+    phone.shadowRoot?.querySelector('input')?.click();
+    expect(email.checked).toBe(false);
+    expect(phone.checkValidity()).toBe(true);
+
+    email.formResetCallback();
+    expect(email.checked).toBe(true);
+    expect(phone.checked).toBe(false);
+  });
+
   it('exposes the native radio role and accessible label without axe violations', async () => {
     const element = mount<NxRadio>('nx-radio', { label: 'Email', name: 'contact', value: 'email' });
     await settle(element);
@@ -301,6 +427,20 @@ describe('nx-switch', () => {
     expect(input?.disabled).toBe(true);
     expect(input?.getAttribute('aria-checked')).toBe('false');
     await expectAccessible(element);
+  });
+
+  it('contributes only checked values and resets its initial checked state', async () => {
+    const element = mount<NxSwitch>('nx-switch', {
+      label: 'Notifications',
+      name: 'notifications',
+      value: 'on',
+      checked: true
+    });
+    await settle(element);
+    element.checked = false;
+    element.formResetCallback();
+    expect(element.checked).toBe(true);
+    expect(element.shadowRoot?.querySelector('input')?.getAttribute('aria-checked')).toBe('true');
   });
 });
 

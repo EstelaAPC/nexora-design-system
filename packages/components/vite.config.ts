@@ -10,7 +10,8 @@ export default defineConfig({
         textarea: fileURLToPath(new URL('./src/textarea/textarea.ts', import.meta.url)),
         checkbox: fileURLToPath(new URL('./src/checkbox/checkbox.ts', import.meta.url)),
         radio: fileURLToPath(new URL('./src/radio/radio.ts', import.meta.url)),
-        switch: fileURLToPath(new URL('./src/switch/switch.ts', import.meta.url))
+        switch: fileURLToPath(new URL('./src/switch/switch.ts', import.meta.url)),
+        select: fileURLToPath(new URL('./src/select/select.ts', import.meta.url))
       },
       formats: ['es']
     },

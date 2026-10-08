@@ -1,5 +1,6 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { NxFormAssociatedElement } from '../form-associated';
 
 export interface NxTextareaChangeDetail {
   value: string;
@@ -8,7 +9,9 @@ export interface NxTextareaChangeDetail {
 let nextTextareaId = 0;
 
 @customElement('nx-textarea')
-export class NxTextarea extends LitElement {
+export class NxTextarea extends NxFormAssociatedElement {
+  static formAssociated = true;
+
   static styles = css`
     :host {
       display: block;
@@ -98,6 +101,7 @@ export class NxTextarea extends LitElement {
   `;
 
   private readonly controlId = `nx-textarea-${++nextTextareaId}`;
+  private defaultValue = '';
 
   @property({ type: String }) label = '';
   @property({ type: String }) value = '';
@@ -114,6 +118,36 @@ export class NxTextarea extends LitElement {
   @property({ type: String, attribute: 'helper-text' }) helperText = '';
   @property({ type: String, reflect: true }) size: 'sm' | 'md' | 'lg' = 'md';
 
+  protected firstUpdated(): void {
+    this.defaultValue = this.value;
+    this.syncFormControl();
+  }
+
+  protected updated(): void {
+    this.syncFormControl();
+  }
+
+  protected syncFormControl(): void {
+    const control = this.shadowRoot?.querySelector('textarea');
+    if (!control) {
+      this.internals.setFormValue(this.isEffectivelyDisabled || !this.name ? null : this.value);
+      return;
+    }
+    control.disabled = this.isEffectivelyDisabled;
+    this.internals.setFormValue(this.isEffectivelyDisabled || !this.name ? null : this.value);
+    this.syncValidity(control, `${this.label || 'This field'} is required.`, this.error);
+    if (this.internals.validity.valid) control.removeAttribute('aria-invalid');
+    else control.setAttribute('aria-invalid', 'true');
+  }
+
+  protected resetFormControl(): void {
+    this.value = this.defaultValue;
+    const control = this.shadowRoot?.querySelector('textarea');
+    if (control) control.value = this.defaultValue;
+    this.syncFormControl();
+    this.requestUpdate();
+  }
+
   private get describedBy(): string | typeof nothing {
     const ids = [
       this.helperText ? `${this.controlId}-helper` : '',
@@ -127,6 +161,7 @@ export class NxTextarea extends LitElement {
     if (!(control instanceof HTMLTextAreaElement)) return;
 
     this.value = control.value;
+    this.syncFormControl();
     this.dispatchEvent(
       new CustomEvent<NxTextareaChangeDetail>('nx-change', {
         detail: { value: this.value },
@@ -139,7 +174,7 @@ export class NxTextarea extends LitElement {
   render() {
     return html`
       <div class="field">
-        <label for=${this.controlId}>${this.label}</label>
+        <label for=${this.controlId}><slot name="label">${this.label}</slot></label>
         <textarea
           id=${this.controlId}
           name=${this.name}
@@ -152,7 +187,6 @@ export class NxTextarea extends LitElement {
           ?disabled=${this.disabled}
           ?readonly=${this.readOnly}
           ?required=${this.required}
-          aria-invalid=${this.error ? 'true' : nothing}
           aria-describedby=${this.describedBy}
           @input=${this.handleInput}
         ></textarea>

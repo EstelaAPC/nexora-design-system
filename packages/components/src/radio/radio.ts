@@ -1,5 +1,6 @@
-import { LitElement, css, html } from 'lit';
+import { css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { NxFormAssociatedElement } from '../form-associated';
 
 export interface NxRadioChangeDetail {
   checked: true;
@@ -8,7 +9,9 @@ export interface NxRadioChangeDetail {
 }
 
 @customElement('nx-radio')
-export class NxRadio extends LitElement {
+export class NxRadio extends NxFormAssociatedElement {
+  static formAssociated = true;
+
   static styles = css`
     :host {
       display: inline-flex;
@@ -64,6 +67,10 @@ export class NxRadio extends LitElement {
       cursor: not-allowed;
     }
 
+    input[aria-invalid='true'] {
+      border-color: var(--nx-color-error);
+    }
+
     label:has(input:disabled) {
       color: var(--nx-color-disabled-text);
       cursor: not-allowed;
@@ -76,14 +83,73 @@ export class NxRadio extends LitElement {
   @property({ type: String, reflect: true }) name = '';
   @property({ type: String }) value = '';
   @property({ type: String }) label = '';
+  private defaultChecked = false;
+
+  protected firstUpdated(): void {
+    this.defaultChecked = this.checked;
+    this.syncFormControl();
+  }
+
+  protected updated(): void {
+    this.syncFormControl();
+  }
+
+  protected syncFormControl(): void {
+    const input = this.shadowRoot?.querySelector('input');
+    if (!input) {
+      this.internals.setFormValue(
+        !this.isEffectivelyDisabled && this.checked && this.name ? this.value : null
+      );
+      return;
+    }
+    input.disabled = this.isEffectivelyDisabled;
+    input.tabIndex = this.groupTabIndex;
+    this.internals.setFormValue(
+      !this.isEffectivelyDisabled && this.checked && this.name ? this.value : null
+    );
+
+    if (this.isEffectivelyDisabled) {
+      this.internals.setValidity({});
+      input.removeAttribute('aria-invalid');
+      return;
+    }
+    const groupHasSelection = this.getGroup().some((radio) => radio.checked);
+    if (this.customValidationMessage) {
+      this.internals.setValidity({ customError: true }, this.customValidationMessage, input);
+    } else if (this.required && !groupHasSelection) {
+      this.internals.setValidity(
+        { valueMissing: true },
+        `${this.label || 'An option'} must be selected.`,
+        input
+      );
+    } else {
+      this.internals.setValidity({});
+    }
+    if (this.internals.validity.valid) input.removeAttribute('aria-invalid');
+    else input.setAttribute('aria-invalid', 'true');
+  }
+
+  protected resetFormControl(): void {
+    this.checked = this.defaultChecked;
+    this.resetRadioGroup();
+  }
+
+  private resetRadioGroup(): void {
+    const group = this.getGroup();
+    const selected = group.find((radio) => radio.defaultChecked);
+    for (const radio of group) {
+      radio.checked = radio === selected;
+      radio.syncFormControl();
+      radio.requestUpdate();
+    }
+  }
 
   private getGroup(): NxRadio[] {
     if (!this.name) return [this];
     const root = this.getRootNode();
     if (!(root instanceof Document || root instanceof ShadowRoot)) return [this];
-    const form = this.closest('form');
     return Array.from(root.querySelectorAll<NxRadio>('nx-radio')).filter(
-      (radio) => radio.name === this.name && radio.closest('form') === form
+      (radio) => radio.name === this.name && radio.form === this.form
     );
   }
 
@@ -96,11 +162,12 @@ export class NxRadio extends LitElement {
         if (input) input.checked = checked;
         radio.requestUpdate();
       }
+      radio.syncFormControl();
     }
   }
 
   private get groupTabIndex(): number {
-    const group = this.getGroup().filter((radio) => !radio.disabled);
+    const group = this.getGroup().filter((radio) => !radio.isEffectivelyDisabled);
     const selected = group.find((radio) => radio.checked);
     return (selected ?? group[0]) === this ? 0 : -1;
   }
@@ -132,7 +199,7 @@ export class NxRadio extends LitElement {
     const direction = directions[event.key];
     if (!direction) return;
 
-    const group = this.getGroup().filter((radio) => !radio.disabled);
+    const group = this.getGroup().filter((radio) => !radio.isEffectivelyDisabled);
     if (group.length < 2) return;
     event.preventDefault();
 
@@ -152,13 +219,13 @@ export class NxRadio extends LitElement {
           name=${this.name}
           value=${this.value}
           .checked=${this.checked}
-          ?disabled=${this.disabled}
+          ?disabled=${this.isEffectivelyDisabled}
           ?required=${this.required}
           .tabIndex=${this.groupTabIndex}
           @change=${this.handleChange}
           @keydown=${this.handleKeydown}
         />
-        <span>${this.label}</span>
+        <span><slot>${this.label}</slot></span>
       </label>
     `;
   }

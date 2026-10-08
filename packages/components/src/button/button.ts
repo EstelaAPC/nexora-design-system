@@ -196,6 +196,13 @@ export class NxButton extends LitElement {
     return this.disabled || this.loading;
   }
 
+  private handleFormAction(): void {
+    if (this.isUnavailable || this.type === 'button') return;
+    const form = this.closest('form');
+    if (this.type === 'submit') form?.requestSubmit();
+    else form?.reset();
+  }
+
   private renderContent() {
     return html`
       ${this.loading ? html`<span class="spinner" aria-hidden="true"></span>` : nothing}
@@ -209,6 +216,7 @@ export class NxButton extends LitElement {
         type=${this.type}
         ?disabled=${this.isUnavailable}
         aria-busy=${this.loading ? 'true' : nothing}
+        @click=${this.handleFormAction}
       >
         ${this.renderContent()}
       </button>

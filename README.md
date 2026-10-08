@@ -47,6 +47,10 @@ Import `@nexora/components` to register all currently available components. Incl
 
 The button renders a native button, so click and keyboard activation retain browser behavior. Loading disables interaction, exposes `aria-busy`, and keeps slotted button text available as the accessible name. No component-specific click event is added.
 
+Form controls (`nx-input`, `nx-textarea`, `nx-checkbox`, `nx-radio`, `nx-switch`, and `nx-select`) are form-associated custom elements. They use `ElementInternals` for `FormData`, disabled fieldsets, reset, and constraint validation; this requires native Form-Associated Custom Elements support (current Chromium, Firefox, and Safari 16.4+). No polyfill is bundled for older browsers.
+
+`nx-select` uses native `<option>` and `<optgroup>` elements as declarative children and a native `<select>` inside its Shadow DOM. It supports `name`, `value`, `label`, `placeholder`, `disabled`, `required`, `help-text`, `error`, `autocomplete`, `aria-label`, `aria-describedby`, and `aria-labelledby`. The selected value is submitted only when the control has a name and is enabled. Reset restores the initial `value` or initially selected option. Native select keyboard and popup behavior are preserved; `readonly` is intentionally not exposed because HTML select has no readonly mode. Consumers can customize its geometry with `--nx-select-height`, `--nx-select-padding-inline`, and `--nx-select-radius`.
+
 ## Customizing design tokens
 
 The token entry is organized into primitive, semantic, and component-specific layers. Primitive scales feed semantic roles, and the small component layer derives button-only geometry from those shared scales. Consumers can override the cascade globally or per theme:

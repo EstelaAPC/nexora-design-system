@@ -6,3 +6,4 @@ export * from './textarea/textarea';
 export * from './checkbox/checkbox';
 export * from './radio/radio';
 export * from './switch/switch';
+export * from './select/select';

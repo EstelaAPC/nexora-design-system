@@ -29,6 +29,10 @@
     "./switch": {
       "types": "./dist/switch/switch.d.ts",
       "import": "./dist/switch.js"
+    },
+    "./select": {
+      "types": "./dist/select/select.d.ts",
+      "import": "./dist/select.js"
     }
   },
   "scripts": {

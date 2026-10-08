@@ -1,5 +1,6 @@
-import { LitElement, css, html } from 'lit';
+import { css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { NxFormAssociatedElement } from '../form-associated';
 
 export interface NxCheckboxChangeDetail {
   checked: boolean;
@@ -8,7 +9,9 @@ export interface NxCheckboxChangeDetail {
 }
 
 @customElement('nx-checkbox')
-export class NxCheckbox extends LitElement {
+export class NxCheckbox extends NxFormAssociatedElement {
+  static formAssociated = true;
+
   static styles = css`
     :host {
       display: inline-flex;
@@ -77,6 +80,10 @@ export class NxCheckbox extends LitElement {
       cursor: not-allowed;
     }
 
+    input[aria-invalid='true'] {
+      border-color: var(--nx-color-error);
+    }
+
     label:has(input:disabled) {
       color: var(--nx-color-disabled-text);
       cursor: not-allowed;
@@ -90,10 +97,41 @@ export class NxCheckbox extends LitElement {
   @property({ type: String }) name = '';
   @property({ type: String }) value = 'on';
   @property({ type: String }) label = '';
+  private defaultChecked = false;
+
+  protected firstUpdated(): void {
+    this.defaultChecked = this.checked;
+    this.syncFormControl();
+  }
 
   protected updated(): void {
+    this.syncFormControl();
+  }
+
+  protected syncFormControl(): void {
     const input = this.shadowRoot?.querySelector('input');
-    if (input) input.indeterminate = this.indeterminate;
+    if (!input) {
+      this.internals.setFormValue(
+        !this.isEffectivelyDisabled && this.checked && this.name ? this.value : null
+      );
+      return;
+    }
+    input.disabled = this.isEffectivelyDisabled;
+    input.checked = this.checked;
+    input.indeterminate = this.indeterminate;
+    this.internals.setFormValue(
+      !this.isEffectivelyDisabled && this.checked && this.name ? this.value : null
+    );
+    this.syncValidity(input, `${this.label || 'This checkbox'} must be checked.`);
+    if (this.internals.validity.valid) input.removeAttribute('aria-invalid');
+    else input.setAttribute('aria-invalid', 'true');
+  }
+
+  protected resetFormControl(): void {
+    this.checked = this.defaultChecked;
+    this.indeterminate = false;
+    this.syncFormControl();
+    this.requestUpdate();
   }
 
   private handleChange(event: Event): void {
@@ -102,6 +140,7 @@ export class NxCheckbox extends LitElement {
 
     this.checked = input.checked;
     this.indeterminate = input.indeterminate;
+    this.syncFormControl();
     this.dispatchEvent(
       new CustomEvent<NxCheckboxChangeDetail>('nx-change', {
         detail: {
@@ -123,11 +162,11 @@ export class NxCheckbox extends LitElement {
           name=${this.name}
           value=${this.value}
           .checked=${this.checked}
-          ?disabled=${this.disabled}
+          ?disabled=${this.isEffectivelyDisabled}
           ?required=${this.required}
           @change=${this.handleChange}
         />
-        <span>${this.label}</span>
+        <span><slot>${this.label}</slot></span>
       </label>
     `;
   }

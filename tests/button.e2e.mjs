@@ -39,7 +39,7 @@ try {
   await page.goto(baseUrl);
   await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
 
-  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch']) {
+  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select']) {
     await page.locator(name).first().waitFor({ state: 'attached' });
     const registered = await page.evaluate((tagName) => Boolean(customElements.get(tagName)), name);
     if (!registered) throw new Error(`${name} was present but not registered as a Custom Element.`);
@@ -230,12 +230,27 @@ try {
     throw new Error('Switch did not turn on or synchronize aria-checked from Space.');
   }
 
+  const playgroundSelect = page.locator('#playground-select select');
+  await playgroundSelect.focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  if (await page.locator('#playground-select').getAttribute('value') !== 'br') {
+    throw new Error('Native select keyboard interaction did not select the first option.');
+  }
+  await page.locator('#playground-select').evaluate(async (element) => {
+    element.style.setProperty('--nx-select-height', '56px');
+    await element.updateComplete;
+  });
+  const selectHeight = await playgroundSelect.evaluate((element) => getComputedStyle(element).minHeight);
+  if (selectHeight !== '56px') throw new Error(`Select token override was not applied: ${selectHeight}.`);
+
   const formViolations = await page.evaluate(async () => {
     const controls = [
       ['nx-textarea', [{ error: '' }, { error: 'Invalid value.' }, { disabled: true }]],
       ['nx-checkbox', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }, { indeterminate: true }]],
       ['nx-radio', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }]],
-      ['nx-switch', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }]]
+      ['nx-switch', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }]],
+      ['nx-select', [{ value: '' }, { value: 'br' }, { disabled: true }, { error: 'Invalid value.' }]]
     ];
     const failures = [];
     for (const [selector, states] of controls) {
@@ -261,7 +276,201 @@ try {
   if (formViolations.length > 0) {
     throw new Error(`Form control axe violations:\n${formViolations.join('\n')}`);
   }
-  console.log('PASS: playground elements, controls, keyboard, themes, token overrides, and axe checks.');
+
+  await page.evaluate(async () => {
+    const form = document.createElement('form');
+    form.id = 'native-api-form';
+    form.innerHTML = `
+      <nx-input id="form-email" name="email" value="estela@example.com" type="email" required minlength="6" maxlength="80"></nx-input>
+      <nx-textarea id="form-message" name="message" value="Initial message" required minlength="4" maxlength="120"></nx-textarea>
+      <nx-checkbox id="form-terms" name="terms" value="accepted" label="Accept terms" required checked></nx-checkbox>
+      <nx-radio id="form-credit" name="payment" value="credit" checked required>Credit</nx-radio>
+      <nx-radio id="form-debit" name="payment" value="debit">Debit</nx-radio>
+      <nx-switch id="form-alerts" name="alerts" value="enabled" label="Alerts" checked></nx-switch>
+      <nx-select id="form-country" name="country" label="Country" value="br" required>
+        <option value="br">Brazil</option>
+        <option value="us">United States</option>
+      </nx-select>
+      <fieldset id="form-disabled-group">
+        <nx-input id="form-locked" name="locked" value="not-submitted" label="Locked"></nx-input>
+        <nx-select id="form-locked-country" name="locked-country" label="Locked country" value="br">
+          <option value="br">Brazil</option>
+        </nx-select>
+      </fieldset>
+      <nx-button id="form-submit" type="submit">Send</nx-button>
+      <nx-button id="form-reset" type="reset">Reset</nx-button>
+    `;
+    document.body.append(form);
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      window.__formSubmitCount = (window.__formSubmitCount ?? 0) + 1;
+    });
+    await Promise.all(Array.from(form.querySelectorAll('*')).map((element) =>
+      'updateComplete' in element ? element.updateComplete : Promise.resolve()
+    ));
+  });
+
+  const formValidity = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  if (!formValidity) throw new Error('The initially complete custom-element form should be valid.');
+  const initialFormData = await page.locator('#native-api-form').evaluate((form) => {
+    const data = new FormData(form);
+    return Object.fromEntries(data.entries());
+  });
+  if (
+    initialFormData.email !== 'estela@example.com' ||
+    initialFormData.message !== 'Initial message' ||
+    initialFormData.terms !== 'accepted' ||
+    initialFormData.payment !== 'credit' ||
+    initialFormData.alerts !== 'enabled' ||
+    initialFormData.country !== 'br' ||
+    initialFormData.locked !== 'not-submitted'
+  ) {
+    throw new Error(`Unexpected FormData for associated custom elements: ${JSON.stringify(initialFormData)}.`);
+  }
+
+  await page.locator('#form-debit input').click();
+  await page.locator('#form-alerts input').click();
+  await page.locator('#form-terms input').click();
+  const uncheckedData = await page.locator('#native-api-form').evaluate((form) =>
+    Object.fromEntries(new FormData(form).entries())
+  );
+  if ('terms' in uncheckedData || uncheckedData.payment !== 'debit' || 'alerts' in uncheckedData) {
+    throw new Error(`Unchecked controls or radio group submitted incorrect values: ${JSON.stringify(uncheckedData)}.`);
+  }
+  await page.evaluate(async () => {
+    const credit = document.querySelector('#form-credit');
+    const debit = document.querySelector('#form-debit');
+    credit.checked = false;
+    debit.checked = false;
+    await Promise.all([credit.updateComplete, debit.updateComplete]);
+  });
+  const missingRadioValid = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  if (missingRadioValid) throw new Error('Required radio group was valid with no selection.');
+  await page.locator('#form-credit input').click();
+  const requiredValid = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  if (requiredValid || !(await page.locator('#form-terms input').getAttribute('aria-invalid'))) {
+    throw new Error('Required checkbox did not participate in the Constraint Validation API.');
+  }
+  await page.locator('#form-terms input').check();
+
+  const emailInput = page.locator('#form-email input');
+  await emailInput.fill('');
+  const missingEmailValid = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  const missingEmailReport = await emailInput.evaluate((element) => element.getRootNode().host.reportValidity());
+  if (missingEmailValid || missingEmailReport) {
+    throw new Error('Required input did not block validity and reportValidity while empty.');
+  }
+  await page.locator('#form-submit button').click();
+  if (await page.evaluate(() => window.__formSubmitCount ?? 0) !== 0) {
+    throw new Error('Invalid required controls did not prevent form submission.');
+  }
+  await emailInput.fill('estela@example.com');
+
+  const message = page.locator('#form-message textarea');
+  await message.fill('x');
+  const minlengthValid = await page.locator('#form-message').evaluate((element) => element.checkValidity());
+  if (minlengthValid) throw new Error('Textarea minlength did not invalidate a too-short user value.');
+  await message.fill('Long enough message');
+  if (!(await page.locator('#form-message').evaluate((element) => element.checkValidity()))) {
+    throw new Error('Textarea did not become valid after its value met minlength.');
+  }
+
+  await page.locator('#form-country select').selectOption('us');
+  if (await page.locator('#form-country').getAttribute('value') !== 'us') {
+    throw new Error('Select interaction did not update the custom element value.');
+  }
+  const changedCountryData = await page.locator('#native-api-form').evaluate((form) =>
+    new FormData(form).get('country')
+  );
+  if (changedCountryData !== 'us') {
+    throw new Error(`Changed select value was not reflected in FormData: ${changedCountryData}.`);
+  }
+
+  const fieldset = page.locator('#form-disabled-group');
+  await fieldset.evaluate((element) => { element.disabled = true; });
+  await page.waitForTimeout(50);
+  const disabledFieldsetData = await page.locator('#native-api-form').evaluate((form) =>
+    Object.fromEntries(new FormData(form).entries())
+  );
+  const disabledInternal = await page.locator('#form-locked input').isDisabled();
+  const disabledSelect = await page.locator('#form-locked-country select').isDisabled();
+  if ('locked' in disabledFieldsetData || 'locked-country' in disabledFieldsetData || !disabledInternal || !disabledSelect) {
+    throw new Error('fieldset[disabled] did not disable and exclude associated input and select controls.');
+  }
+  await fieldset.evaluate((element) => { element.disabled = false; });
+  await page.waitForTimeout(50);
+
+  await page.locator('#form-submit button').click();
+  const submitCount = await page.evaluate(() => window.__formSubmitCount);
+  if (submitCount !== 1) throw new Error(`Expected one valid form submit, received ${submitCount}.`);
+
+  await page.locator('#form-email input').fill('changed@example.com');
+  await page.locator('#form-message textarea').fill('Changed');
+  await page.locator('#form-debit input').click();
+  await page.locator('#form-alerts input').click();
+  await page.locator('#form-country select').selectOption('us');
+  await page.locator('#form-reset button').click();
+  await page.waitForTimeout(50);
+  const resetState = await page.evaluate(() => ({
+    email: document.querySelector('#form-email').value,
+    message: document.querySelector('#form-message').value,
+    terms: document.querySelector('#form-terms').checked,
+    credit: document.querySelector('#form-credit').checked,
+    debit: document.querySelector('#form-debit').checked,
+    alerts: document.querySelector('#form-alerts').checked,
+    country: document.querySelector('#form-country').value
+  }));
+  const resetFormData = await page.locator('#native-api-form').evaluate((form) =>
+    Object.fromEntries(new FormData(form).entries())
+  );
+  if (
+    resetState.email !== 'estela@example.com' ||
+    resetState.message !== 'Initial message' ||
+    !resetState.terms ||
+    !resetState.credit ||
+    resetState.debit ||
+    !resetState.alerts ||
+    resetState.country !== 'br' ||
+    resetFormData.payment !== 'credit' ||
+    resetFormData.terms !== 'accepted' ||
+    resetFormData.alerts !== 'enabled' ||
+    resetFormData.country !== 'br'
+  ) {
+    throw new Error(`Form reset did not restore defaults/FormData: ${JSON.stringify({ resetState, resetFormData })}.`);
+  }
+
+  await page.evaluate(async () => {
+    const form = document.createElement('form');
+    form.id = 'required-select-form';
+    form.innerHTML = `
+      <nx-select id="required-country" name="required-country" label="Required country" required>
+        <option value="br">Brazil</option>
+      </nx-select>
+    `;
+    document.body.append(form);
+    await Promise.all(Array.from(form.querySelectorAll('*')).map((element) =>
+      'updateComplete' in element ? element.updateComplete : Promise.resolve()
+    ));
+  });
+  const requiredCountryValid = await page.locator('#required-select-form').evaluate((form) => form.checkValidity());
+  const requiredCountryReport = await page.locator('#required-country').evaluate((element) => element.reportValidity());
+  if (requiredCountryValid || requiredCountryReport) {
+    throw new Error('Required select did not block form validity or reportValidity when empty.');
+  }
+  const requiredCountryInvalid = await page.locator('#required-country select').getAttribute('aria-invalid');
+  if (requiredCountryInvalid !== 'true') throw new Error('Required select did not expose aria-invalid.');
+
+  const selectTheme = await page.locator('#playground-select select').evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+  await page.waitForTimeout(100);
+  const selectLightTheme = await page.locator('#playground-select select').evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await page.waitForTimeout(100);
+  const selectDarkTheme = await page.locator('#playground-select select').evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (selectLightTheme === selectDarkTheme || !selectTheme) {
+    throw new Error(`Select surface did not respond to theme changes: ${selectLightTheme}, ${selectDarkTheme}.`);
+  }
+  console.log('PASS: playground elements, controls, keyboard, forms, themes, token overrides, and axe checks.');
 } finally {
   if (browser) await browser.close();
   vite.kill();

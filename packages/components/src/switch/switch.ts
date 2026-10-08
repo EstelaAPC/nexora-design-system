@@ -1,5 +1,6 @@
-import { LitElement, css, html } from 'lit';
+import { css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { NxFormAssociatedElement } from '../form-associated';
 
 export interface NxSwitchChangeDetail {
   checked: boolean;
@@ -7,7 +8,9 @@ export interface NxSwitchChangeDetail {
 }
 
 @customElement('nx-switch')
-export class NxSwitch extends LitElement {
+export class NxSwitch extends NxFormAssociatedElement {
+  static formAssociated = true;
+
   static styles = css`
     :host {
       display: inline-flex;
@@ -76,6 +79,10 @@ export class NxSwitch extends LitElement {
       cursor: not-allowed;
     }
 
+    input[aria-invalid='true'] {
+      border-color: var(--nx-color-error);
+    }
+
     input:disabled::before {
       background: var(--nx-color-disabled-text);
     }
@@ -90,14 +97,50 @@ export class NxSwitch extends LitElement {
   @property({ type: Boolean, reflect: true }) disabled = false;
   @property({ type: Boolean, reflect: true }) required = false;
   @property({ type: String }) label = '';
-  @property({ type: String }) name = '';
+  @property({ type: String, reflect: true }) name = '';
   @property({ type: String }) value = 'on';
+  private defaultChecked = false;
+
+  protected firstUpdated(): void {
+    this.defaultChecked = this.checked;
+    this.syncFormControl();
+  }
+
+  protected updated(): void {
+    this.syncFormControl();
+  }
+
+  protected syncFormControl(): void {
+    const input = this.shadowRoot?.querySelector('input');
+    if (!input) {
+      this.internals.setFormValue(
+        !this.isEffectivelyDisabled && this.checked && this.name ? this.value : null
+      );
+      return;
+    }
+    input.disabled = this.isEffectivelyDisabled;
+    input.checked = this.checked;
+    input.setAttribute('aria-checked', String(this.checked));
+    this.internals.setFormValue(
+      !this.isEffectivelyDisabled && this.checked && this.name ? this.value : null
+    );
+    this.syncValidity(input, `${this.label || 'This switch'} must be enabled.`);
+    if (this.internals.validity.valid) input.removeAttribute('aria-invalid');
+    else input.setAttribute('aria-invalid', 'true');
+  }
+
+  protected resetFormControl(): void {
+    this.checked = this.defaultChecked;
+    this.syncFormControl();
+    this.requestUpdate();
+  }
 
   private handleChange(event: Event): void {
     const input = event.currentTarget;
     if (!(input instanceof HTMLInputElement)) return;
 
     this.checked = input.checked;
+    this.syncFormControl();
     this.dispatchEvent(
       new CustomEvent<NxSwitchChangeDetail>('nx-change', {
         detail: { checked: this.checked, value: this.value },
@@ -116,12 +159,12 @@ export class NxSwitch extends LitElement {
           name=${this.name}
           value=${this.value}
           .checked=${this.checked}
-          ?disabled=${this.disabled}
+          ?disabled=${this.isEffectivelyDisabled}
           ?required=${this.required}
           aria-checked=${String(this.checked)}
           @change=${this.handleChange}
         />
-        <span>${this.label}</span>
+        <span><slot>${this.label}</slot></span>
       </label>
     `;
   }

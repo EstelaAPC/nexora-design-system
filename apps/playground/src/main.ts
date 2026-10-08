@@ -45,6 +45,25 @@ if (app) {
       <nx-switch id="playground-switch" name="notifications" value="enabled" label="Notifications"></nx-switch>
       <nx-switch disabled label="Disabled switch"></nx-switch>
     </section>
+
+    <section class="panel demo-grid">
+      <nx-select id="playground-select" label="Country" name="country" placeholder="Choose a country">
+        <option value="br">Brazil</option>
+        <option value="us">United States</option>
+        <option value="pt">Portugal</option>
+      </nx-select>
+      <nx-select label="Required country" name="required-country" required placeholder="Choose a country">
+        <option value="br">Brazil</option>
+        <option value="pt">Portugal</option>
+      </nx-select>
+      <form id="playground-select-form">
+        <nx-select label="Shipping country" name="shipping-country" value="br">
+          <option value="br">Brazil</option>
+          <option value="us">United States</option>
+        </nx-select>
+        <button type="submit">Submit country</button>
+      </form>
+    </section>
   `;
 
   const action = app.querySelector('#playground-action');

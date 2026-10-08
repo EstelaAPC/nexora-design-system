@@ -16,6 +16,11 @@
   --nx-button-focus-width: var(--nx-border-width-focus);
   --nx-button-shadow: var(--nx-elevation-low);
 
+  /* Select keeps native platform affordances and exposes only its geometry. */
+  --nx-select-height: calc(var(--nx-spacing-8) + var(--nx-spacing-3));
+  --nx-select-padding-inline: var(--nx-spacing-4);
+  --nx-select-radius: var(--nx-radius-md);
+
   /* The switch track has a distinct compact geometry and thumb travel. */
   --nx-switch-track-width: calc(var(--nx-spacing-8) + var(--nx-spacing-3));
   --nx-switch-track-height: var(--nx-spacing-6);

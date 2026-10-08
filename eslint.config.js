@@ -21,7 +21,17 @@ export default [
         navigator: 'readonly',
         HTMLElement: 'readonly',
         HTMLInputElement: 'readonly',
+        HTMLSelectElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
+        HTMLOptionElement: 'readonly',
+        HTMLOptGroupElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        MutationObserver: 'readonly',
+        ElementInternals: 'readonly',
+        ValidityState: 'readonly',
+        ValidityStateFlags: 'readonly',
+        FormData: 'readonly',
+        File: 'readonly',
         Event: 'readonly',
         CustomEvent: 'readonly',
         KeyboardEvent: 'readonly',
@@ -49,6 +59,7 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off'
     }
   },
@@ -59,6 +70,7 @@ export default [
         process: 'readonly',
         fetch: 'readonly',
         console: 'readonly',
+        FormData: 'readonly',
         window: 'readonly',
         customElements: 'readonly',
         document: 'readonly',
