@@ -39,7 +39,7 @@ try {
   await page.goto(baseUrl);
   await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
 
-  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select', 'nx-icon', 'nx-icon-button']) {
+  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select', 'nx-icon', 'nx-icon-button', 'nx-alert', 'nx-spinner', 'nx-progress', 'nx-toast', 'nx-tabs', 'nx-breadcrumb', 'nx-pagination', 'nx-dialog', 'nx-tooltip', 'nx-popover', 'nx-table']) {
     await page.locator(name).first().waitFor({ state: 'attached' });
     const registered = await page.evaluate((tagName) => Boolean(customElements.get(tagName)), name);
     if (!registered) throw new Error(`${name} was present but not registered as a Custom Element.`);
@@ -196,6 +196,246 @@ try {
   if (!unnamedButtonAxe.includes('button-name')) {
     throw new Error(`axe-core did not detect the missing icon-button name: ${unnamedButtonAxe.join(', ')}.`);
   }
+
+  const feedbackState = await page.evaluate(async () => {
+    const alert = document.querySelector('#playground-alert');
+    const spinner = document.querySelector('#playground-spinner');
+    const progress = document.querySelector('#playground-progress');
+    const toast = document.querySelector('#playground-toast');
+    if (!alert || !spinner || !progress || !toast) throw new Error('Feedback playground examples were not found.');
+    await Promise.all([alert, spinner, progress, toast].map((element) => element.updateComplete));
+    return {
+      alertRole: alert.shadowRoot.querySelector('[role]')?.getAttribute('role'),
+      spinnerRole: spinner.shadowRoot.querySelector('.spinner')?.getAttribute('role'),
+      progressMin: progress.shadowRoot.querySelector('[role="progressbar"]')?.getAttribute('aria-valuemin'),
+      progressNow: progress.shadowRoot.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow'),
+      toastRole: toast.shadowRoot.querySelector('[role]')?.getAttribute('role'),
+      toastLive: toast.shadowRoot.querySelector('[role]')?.getAttribute('aria-live')
+    };
+  });
+  if (
+    feedbackState.alertRole !== 'status' ||
+    feedbackState.spinnerRole !== 'status' ||
+    feedbackState.progressMin !== '0' ||
+    feedbackState.progressNow !== '60' ||
+    feedbackState.toastRole !== 'status' ||
+    feedbackState.toastLive !== 'polite'
+  ) {
+    throw new Error(`Feedback component semantics are incorrect: ${JSON.stringify(feedbackState)}.`);
+  }
+  const progress = page.locator('#playground-progress');
+  await progress.evaluate(async (element) => {
+    element.value = 150;
+    await element.updateComplete;
+  });
+  if (await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow') !== '100') {
+    throw new Error('Progress values above max were not normalized.');
+  }
+  await progress.evaluate(async (element) => {
+    element.value = -3;
+    await element.updateComplete;
+  });
+  if (await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow') !== '0') {
+    throw new Error('Negative progress values were not normalized.');
+  }
+  await progress.evaluate(async (element) => {
+    element.value = undefined;
+    await element.updateComplete;
+  });
+  if (await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow') !== null) {
+    throw new Error('Indeterminate progress exposed aria-valuenow.');
+  }
+
+  const feedbackAxe = await page.evaluate(async () => {
+    const samples = ['#playground-alert', '#playground-spinner', '#playground-progress', '#playground-toast'];
+    const violations = [];
+    for (const selector of samples) {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`Missing feedback element ${selector}.`);
+      const report = await window.axe.run(element, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        rules: { 'color-contrast': { enabled: false } }
+      });
+      violations.push(...report.violations.map(({ id, help }) => `${selector}: ${id}: ${help}`));
+    }
+    return violations;
+  });
+  if (feedbackAxe.length > 0) throw new Error(`Feedback axe-core violations: ${feedbackAxe.join('; ')}`);
+
+  await page.evaluate(() => {
+    window.__feedbackDismissEvents = 0;
+    document.addEventListener('nx-dismiss', () => { window.__feedbackDismissEvents += 1; });
+  });
+  await page.getByRole('button', { name: 'Dismiss notification' }).click();
+  if (await page.locator('#playground-toast').getAttribute('open') !== null) {
+    throw new Error('Manual toast dismissal did not close the toast.');
+  }
+  await page.getByRole('button', { name: 'Dismiss alert' }).click();
+  if (await page.locator('#playground-alert').count() !== 0) {
+    throw new Error('Manual alert dismissal did not remove the alert.');
+  }
+  if (await page.evaluate(() => window.__feedbackDismissEvents) !== 2) {
+    throw new Error('Feedback dismissals did not emit bubbling nx-dismiss events.');
+  }
+
+  const breadcrumb = page.locator('#playground-breadcrumb');
+  if (
+    await breadcrumb.getByRole('navigation', { name: 'Page location' }).count() !== 1 ||
+    await breadcrumb.locator('[aria-current="page"]').textContent() !== 'Navigation'
+  ) {
+    throw new Error('Breadcrumb navigation did not expose its label and current page.');
+  }
+  const tabs = page.locator('#playground-tabs');
+  const tabButtons = tabs.locator('button[slot="tab"]');
+  await tabButtons.nth(0).focus();
+  await page.keyboard.press('ArrowRight');
+  if (
+    await tabButtons.nth(1).getAttribute('aria-selected') !== 'true' ||
+    await tabButtons.nth(1).evaluate((element) => element !== document.activeElement)
+  ) {
+    throw new Error('ArrowRight did not focus and automatically activate the next tab.');
+  }
+  await page.keyboard.press('End');
+  if (await tabButtons.nth(1).getAttribute('aria-selected') !== 'true') {
+    throw new Error('End did not activate the last tab.');
+  }
+  await page.keyboard.press('Home');
+  if (await tabButtons.nth(0).getAttribute('aria-selected') !== 'true') {
+    throw new Error('Home did not activate the first tab.');
+  }
+  const pagination = page.locator('#playground-pagination');
+  await page.evaluate(() => {
+    window.__pageChangeDetail = undefined;
+    document.querySelector('#playground-pagination')?.addEventListener('nx-page-change', (event) => {
+      window.__pageChangeDetail = event.detail;
+    });
+  });
+  await pagination.getByRole('button', { name: 'Next page' }).click();
+  if (
+    await pagination.evaluate((element) => element.currentPage) !== 4 ||
+    (await page.evaluate(() => window.__pageChangeDetail))?.page !== 4
+  ) {
+    throw new Error('Pagination did not update and emit nx-page-change with the next page.');
+  }
+  const navigationAxe = await page.evaluate(async () => {
+    const violations = [];
+    for (const selector of ['#playground-breadcrumb', '#playground-tabs', '#playground-pagination']) {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`Missing navigation element ${selector}.`);
+      const report = await window.axe.run(element, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        rules: { 'color-contrast': { enabled: false } }
+      });
+      violations.push(...report.violations.map(({ id, help }) => `${selector}: ${id}: ${help}`));
+    }
+    return violations;
+  });
+  if (navigationAxe.length > 0) throw new Error(`Navigation axe-core violations: ${navigationAxe.join('; ')}`);
+
+  const dialog = page.locator('#playground-dialog');
+  const dialogNative = dialog.locator('dialog');
+  await page.locator('#playground-open-dialog').click();
+  if (!(await dialogNative.evaluate((element) => element.open))) {
+    throw new Error('Dialog trigger did not open the native dialog.');
+  }
+  if (await dialogNative.getAttribute('aria-labelledby') === null) {
+    throw new Error('Native dialog does not reference its accessible title.');
+  }
+  const dialogAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-dialog');
+    if (!element) throw new Error('Dialog example is missing.');
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (dialogAxe.length > 0) throw new Error(`Dialog axe-core violations: ${dialogAxe.join('; ')}`);
+  await page.keyboard.press('Escape');
+  if (await dialogNative.evaluate((element) => element.open)) {
+    throw new Error('Escape did not close the native modal dialog.');
+  }
+  if (!(await page.locator('#playground-open-dialog').evaluate((element) => element === document.activeElement))) {
+    throw new Error('Dialog close did not restore focus to its opener.');
+  }
+
+  const tooltip = page.locator('#playground-tooltip');
+  const tooltipTrigger = tooltip.locator('button');
+  await tooltipTrigger.focus();
+  if (!(await tooltip.locator('[role="tooltip"]').isVisible())) {
+    throw new Error('Tooltip did not appear when its trigger received keyboard focus.');
+  }
+  if (!(await tooltipTrigger.getAttribute('aria-describedby'))?.includes('nx-tooltip-')) {
+    throw new Error('Tooltip description was not connected to the trigger.');
+  }
+  await page.keyboard.press('Escape');
+  if (await tooltip.locator('[role="tooltip"]').isVisible()) {
+    throw new Error('Escape did not dismiss the focused tooltip.');
+  }
+  const tooltipAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-tooltip');
+    if (!element) throw new Error('Tooltip example is missing.');
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (tooltipAxe.length > 0) throw new Error(`Tooltip axe-core violations: ${tooltipAxe.join('; ')}`);
+
+  const popover = page.locator('#playground-popover');
+  await popover.locator('.trigger').click();
+  if (await popover.getAttribute('open') === null || !(await popover.locator('.surface').isVisible())) {
+    throw new Error('Popover trigger did not show its content.');
+  }
+  await page.keyboard.press('Escape');
+  if (await popover.getAttribute('open') !== null) {
+    throw new Error('Escape did not close the popover.');
+  }
+  if (!(await popover.evaluate((element) =>
+    element.shadowRoot?.activeElement === element.shadowRoot?.querySelector('.trigger')
+  ))) {
+    throw new Error('Popover close did not restore focus to its trigger.');
+  }
+  await popover.locator('.trigger').click();
+  await page.locator('#app > section:nth-of-type(1) h1').click();
+  if (await popover.getAttribute('open') !== null) {
+    throw new Error('Clicking outside the popover did not dismiss it.');
+  }
+  const popoverAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-popover');
+    if (!element) throw new Error('Popover example is missing.');
+    element.open = true;
+    await element.updateComplete;
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (popoverAxe.length > 0) throw new Error(`Popover axe-core violations: ${popoverAxe.join('; ')}`);
+  await popover.evaluate((element) => element.close());
+
+  const table = page.locator('#playground-table');
+  const nativeTable = table.locator('table');
+  if (
+    await nativeTable.locator('caption').textContent() !== 'Team directory' ||
+    await nativeTable.locator('thead th[scope="col"]').count() !== 3 ||
+    await nativeTable.locator('tbody th[scope="row"]').count() !== 3 ||
+    await nativeTable.locator('tbody tr').count() !== 3
+  ) {
+    throw new Error('nx-table did not render the caption, native headers, and rows correctly.');
+  }
+  const tableAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-table');
+    if (!element) throw new Error('Table example is missing.');
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (tableAxe.length > 0) throw new Error(`Table axe-core violations: ${tableAxe.join('; ')}`);
 
   await page.evaluate(() => {
     document.body.tabIndex = -1;

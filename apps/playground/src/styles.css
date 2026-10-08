@@ -52,3 +52,21 @@ body {
   flex-wrap: wrap;
   gap: var(--nx-spacing-3);
 }
+
+.feedback-grid {
+  display: grid;
+  gap: var(--nx-spacing-4);
+}
+
+.feedback-status {
+  display: flex;
+  align-items: center;
+  gap: var(--nx-spacing-4);
+}
+
+.overlay-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--nx-spacing-4);
+}

@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-The playground demonstrates the public components, including icon buttons and form integration.
+The playground demonstrates the public components across actions, feedback, navigation, overlays, and data display, including icon buttons and form integration.
 
 ## Consuming the button
 
@@ -50,6 +50,33 @@ The button renders a native button, so click and keyboard activation retain brow
 `nx-icon` renders named SVG path data from `@nexora/icons` inside its Shadow DOM. Icons are decorative and hidden from assistive technology by default; set `aria-label` or `title` to expose an icon as a named image. The `name` values are `check`, `close`, `plus`, `minus`, `chevron-down`, `chevron-up`, `arrow-left`, `arrow-right`, `info`, `warning`, and `search`. The `size` values are `sm`, `md`, and `lg`; consumers can override size with `--nx-icon-size` and color with the inherited CSS `color`. Unknown names render no SVG without throwing. Each icon is available from its own `@nexora/icons/<name>` ESM subpath so bundlers can split or tree-shake the icon modules.
 
 `nx-icon-button` composes a native button with `nx-icon`; its icon is always decorative, and consumers must provide a meaningful `aria-label` (a development warning is emitted when it is missing). It supports `type="button|submit|reset"` (default `button`), `disabled`, sizes `sm|md|lg`, and variants `primary|secondary|ghost|danger`. It uses the corresponding `nx-button` height, focus, and radius tokens; `--nx-icon-button-radius` can override its radius independently. Import it with `@nexora/components/icon-button`.
+
+## Feedback and navigation
+
+Import individual components from their granular package subpaths (for example, `@nexora/components/alert`) or use the package root to register all components.
+
+| Component | Public API and behavior |
+| --- | --- |
+| `nx-alert` | Slotted message, `severity="info|success|warning|error"`, optional `heading`, `dismissible`. Non-urgent states use `status`; warning/error use `alert`. Dismissal removes the element and emits bubbling/composed `nx-dismiss`. |
+| `nx-spinner` | `size="sm|md|lg"` and optional `label`. Unlabelled spinner is decorative; labelled spinner exposes a status. Animation stops for reduced motion. |
+| `nx-progress` | Optional `value`, `max` (default `100`) and `label` (default `Progress`). Missing/non-finite value is indeterminate; determinate values are clamped to `[0,max]`. |
+| `nx-toast` | `open`, `severity`, `duration` in milliseconds (`0` disables auto-dismiss), `dismissible`. Status is polite; warning/error are assertive. Hover and focus pause its timer. Dismissal emits bubbling/composed `nx-dismiss`. |
+| `nx-tabs` | `label`, `selected-index`; provide native `<button slot="tab">` and matching elements with `slot="panel"`. Horizontal tabs use automatic activation with ArrowLeft/ArrowRight/Home/End. |
+| `nx-breadcrumb` | `label` and an `items` array of `{ label, href? }`. The final item is the current page; preceding items are links only when `href` is supplied. |
+| `nx-pagination` | `current-page`, `total-pages`, optional `label`, `previous-label`, `next-label`. Page count is kept bounded; changes emit bubbling/composed `nx-page-change` with `{ page }`. |
+
+Animated feedback respects `prefers-reduced-motion`. Components use existing semantic and primitive tokens; no new global tokens were needed.
+
+## Overlays and data display
+
+| Component | Public API and behavior |
+| --- | --- |
+| `nx-dialog` | `title`, `open`, `modal`; renders native `<dialog>`, exposes `close()`, handles Escape, and restores focus to the opener. |
+| `nx-tooltip` | `text` and a slotted trigger. The tooltip appears on hover/focus, is dismissible with Escape, and augments (does not replace) the trigger's existing description. |
+| `nx-popover` | `title`, `open`, `trigger="click|manual"`, `placement="top|right|bottom|left"`; supports Escape, outside-click dismissal, and focus restoration. |
+| `nx-table` | `header` caption, typed `columns` and `rows` JavaScript properties, `striped`, `hover`, `density="comfortable|compact"`, and `emptyState`. Columns accept `key`, `header`, and optional `rowHeader`. Cell data must be string, number, boolean, or nullish; object values are rejected. |
+
+Dialog and popover use native browser popover/dialog APIs when available; tooltip is CSS positioned. Reduced-motion preferences are respected. Table markup uses native caption, headers, rows, and cells.
 
 Form controls (`nx-input`, `nx-textarea`, `nx-checkbox`, `nx-radio`, `nx-switch`, and `nx-select`) are form-associated custom elements. They use `ElementInternals` for `FormData`, disabled fieldsets, reset, and constraint validation; this requires native Form-Associated Custom Elements support (current Chromium, Firefox, and Safari 16.4+). No polyfill is bundled for older browsers.
 

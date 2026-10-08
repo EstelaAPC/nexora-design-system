@@ -46,6 +46,50 @@
     "./icon-button": {
       "types": "./dist/icon-button/icon-button.d.ts",
       "import": "./dist/icon-button.js"
+    },
+    "./alert": {
+      "types": "./dist/alert/alert.d.ts",
+      "import": "./dist/alert.js"
+    },
+    "./spinner": {
+      "types": "./dist/spinner/spinner.d.ts",
+      "import": "./dist/spinner.js"
+    },
+    "./progress": {
+      "types": "./dist/progress/progress.d.ts",
+      "import": "./dist/progress.js"
+    },
+    "./toast": {
+      "types": "./dist/toast/toast.d.ts",
+      "import": "./dist/toast.js"
+    },
+    "./tabs": {
+      "types": "./dist/tabs/tabs.d.ts",
+      "import": "./dist/tabs.js"
+    },
+    "./breadcrumb": {
+      "types": "./dist/breadcrumb/breadcrumb.d.ts",
+      "import": "./dist/breadcrumb.js"
+    },
+    "./pagination": {
+      "types": "./dist/pagination/pagination.d.ts",
+      "import": "./dist/pagination.js"
+    },
+    "./dialog": {
+      "types": "./dist/dialog/dialog.d.ts",
+      "import": "./dist/dialog.js"
+    },
+    "./tooltip": {
+      "types": "./dist/tooltip/tooltip.d.ts",
+      "import": "./dist/tooltip.js"
+    },
+    "./popover": {
+      "types": "./dist/popover/popover.d.ts",
+      "import": "./dist/popover.js"
+    },
+    "./table": {
+      "types": "./dist/table/table.d.ts",
+      "import": "./dist/table.js"
     }
   },
   "scripts": {
