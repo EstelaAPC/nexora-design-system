@@ -45,3 +45,10 @@ body {
   align-items: center;
   gap: var(--nx-spacing-2);
 }
+
+.icon-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--nx-spacing-3);
+}

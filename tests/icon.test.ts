@@ -52,6 +52,7 @@ describe('nx-icon', () => {
     expect(svg?.getAttribute('viewBox')).toBe('0 0 24 24');
     expect(svg?.querySelector('path')?.getAttribute('d')).toBe('m5 12.5 4.2 4.2L19 6.9');
     expect(svg?.getAttribute('stroke')).toBe('currentColor');
+    expect(svg?.querySelector('path')?.namespaceURI).toBe('http://www.w3.org/2000/svg');
   });
 
   it('is decorative and hidden from assistive technology by default', async () => {

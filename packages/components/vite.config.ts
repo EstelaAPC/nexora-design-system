@@ -13,7 +13,8 @@ export default defineConfig({
         radio: fileURLToPath(new URL('./src/radio/radio.ts', import.meta.url)),
         switch: fileURLToPath(new URL('./src/switch/switch.ts', import.meta.url)),
         select: fileURLToPath(new URL('./src/select/select.ts', import.meta.url)),
-        icon: fileURLToPath(new URL('./src/icon/icon.ts', import.meta.url))
+        icon: fileURLToPath(new URL('./src/icon/icon.ts', import.meta.url)),
+        'icon-button': fileURLToPath(new URL('./src/icon-button/icon-button.ts', import.meta.url))
       },
       formats: ['es']
     },

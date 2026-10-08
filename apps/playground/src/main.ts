@@ -30,6 +30,22 @@ if (app) {
     </section>
 
     <section class="panel">
+      <h2>Icon buttons</h2>
+      <div class="icon-actions">
+        <nx-icon-button id="playground-search-button" icon="search" aria-label="Search" variant="primary"></nx-icon-button>
+        <nx-icon-button icon="close" aria-label="Close" variant="ghost"></nx-icon-button>
+        <nx-icon-button icon="plus" aria-label="Add item" variant="secondary"></nx-icon-button>
+        <nx-icon-button icon="warning" aria-label="Show warning" variant="danger"></nx-icon-button>
+      </div>
+      <form id="playground-icon-button-form" class="icon-actions">
+        <input name="query" value="Nexora" aria-label="Search query">
+        <nx-icon-button id="playground-icon-submit" icon="search" aria-label="Submit search" type="submit"></nx-icon-button>
+        <nx-icon-button id="playground-icon-reset" icon="close" aria-label="Reset search" type="reset"></nx-icon-button>
+        <span id="playground-icon-form-status" aria-live="polite"></span>
+      </form>
+    </section>
+
+    <section class="panel">
       <nx-card title="Form demo">
         <nx-input label="Email" type="email" placeholder="name@example.com"></nx-input>
         <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center;">
@@ -86,5 +102,11 @@ if (app) {
     count += 1;
     if (status) status.textContent = 'Primary action clicked';
     if (clickCount) clickCount.textContent = String(count);
+  });
+
+  app.querySelector('#playground-icon-button-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const status = app.querySelector('#playground-icon-form-status');
+    if (status) status.textContent = 'Search submitted';
   });
 }

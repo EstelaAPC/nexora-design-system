@@ -1,4 +1,4 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { LitElement, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { IconDefinition, IconName } from '@nexora/icons';
 
@@ -95,7 +95,7 @@ export class NxIcon extends LitElement {
     const hidden = this.ariaHiddenValue ?? !(this.ariaLabel || this.title);
     const accessibleLabel = this.ariaLabel || nothing;
     const title = this.title
-      ? html`<title id=${this.titleId}>${this.title}</title>`
+      ? svg`<title id=${this.titleId}>${this.title}</title>`
       : nothing;
 
     return html`
@@ -113,7 +113,7 @@ export class NxIcon extends LitElement {
         aria-labelledby=${!hidden && !this.ariaLabel && this.title ? this.titleId : nothing}
       >
         ${title}
-        ${this.icon.paths.map((path) => html`<path d=${path}></path>`)}
+        ${this.icon.paths.map((path) => svg`<path d=${path}></path>`)}
       </svg>
     `;
   }

@@ -39,7 +39,7 @@ try {
   await page.goto(baseUrl);
   await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
 
-  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select', 'nx-icon']) {
+  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select', 'nx-icon', 'nx-icon-button']) {
     await page.locator(name).first().waitFor({ state: 'attached' });
     const registered = await page.evaluate((tagName) => Boolean(customElements.get(tagName)), name);
     if (!registered) throw new Error(`${name} was present but not registered as a Custom Element.`);
@@ -50,9 +50,17 @@ try {
   const initialIcon = await playgroundIcon.locator('svg').evaluate((svg) => ({
     hidden: svg.getAttribute('aria-hidden'),
     pathCount: svg.querySelectorAll('path').length,
+    pathNamespace: svg.querySelector('path')?.namespaceURI,
+    pathLength: svg.querySelector('path')?.getTotalLength(),
     width: getComputedStyle(svg.getRootNode().host).width
   }));
-  if (initialIcon.hidden !== 'true' || initialIcon.pathCount !== 1 || initialIcon.width !== '20px') {
+  if (
+    initialIcon.hidden !== 'true' ||
+    initialIcon.pathCount !== 1 ||
+    initialIcon.pathNamespace !== 'http://www.w3.org/2000/svg' ||
+    initialIcon.pathLength <= 0 ||
+    initialIcon.width !== '20px'
+  ) {
     throw new Error(`Unexpected default icon rendering: ${JSON.stringify(initialIcon)}.`);
   }
   await playgroundIcon.evaluate((element) => {
@@ -105,8 +113,97 @@ try {
   await playgroundIcon.evaluate((element) => element.style.removeProperty('--nx-icon-size'));
   await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
 
+  const iconButton = page.locator('#playground-search-button');
+  const iconButtonNative = iconButton.locator('button');
+  if (await page.getByRole('button', { name: 'Search', exact: true }).count() !== 1) {
+    throw new Error('The icon button did not expose its aria-label as the button name.');
+  }
+  await iconButton.evaluate((element) => {
+    window.__iconButtonActivations = 0;
+    element.addEventListener('click', () => { window.__iconButtonActivations += 1; });
+  });
+  await iconButtonNative.focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  if (await page.evaluate(() => window.__iconButtonActivations) !== 2) {
+    throw new Error('The icon button did not preserve native Enter/Space activation.');
+  }
+  const iconButtonFocusStyle = await iconButtonNative.evaluate((element) => ({
+    outlineStyle: getComputedStyle(element).outlineStyle,
+    outlineWidth: getComputedStyle(element).outlineWidth
+  }));
+  if (iconButtonFocusStyle.outlineStyle !== 'solid' || iconButtonFocusStyle.outlineWidth === '0px') {
+    throw new Error(`The icon button focus indicator is not visible: ${JSON.stringify(iconButtonFocusStyle)}.`);
+  }
+  await iconButton.evaluate(async (element) => {
+    element.disabled = true;
+    await element.updateComplete;
+  });
+  if (!(await iconButtonNative.isDisabled())) {
+    throw new Error('The disabled icon button did not disable its native button.');
+  }
+  await iconButtonNative.click({ force: true });
+  if (await page.evaluate(() => window.__iconButtonActivations) !== 2) {
+    throw new Error('A disabled icon button responded to click.');
+  }
+  await iconButton.evaluate(async (element) => {
+    element.disabled = false;
+    element.style.setProperty('--nx-icon-button-radius', '50%');
+    await element.updateComplete;
+  });
+  const iconButtonRadius = await iconButtonNative.evaluate((element) => getComputedStyle(element).borderRadius);
+  if (iconButtonRadius !== '50%') throw new Error(`The icon-button radius token was not applied: ${iconButtonRadius}.`);
+  const lightIconButtonColor = await iconButtonNative.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await page.waitForTimeout(250);
+  const darkIconButtonColor = await iconButtonNative.evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (lightIconButtonColor === darkIconButtonColor) {
+    throw new Error(`The icon button did not adapt to the dark theme: ${lightIconButtonColor}, ${darkIconButtonColor}.`);
+  }
+  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
+
+  await page.locator('#playground-icon-submit button').click();
+  if (await page.locator('#playground-icon-form-status').textContent() !== 'Search submitted') {
+    throw new Error('The icon button did not submit its containing form.');
+  }
+  await page.locator('#playground-icon-button-form input').fill('Changed query');
+  await page.locator('#playground-icon-reset button').click();
+  if (await page.locator('#playground-icon-button-form input').inputValue() !== 'Nexora') {
+    throw new Error('The reset icon button did not reset its containing form.');
+  }
+
+  const iconButtonAxe = await page.evaluate(async () => {
+    const sample = document.querySelector('#playground-search-button');
+    if (!sample) throw new Error('The named icon button sample was not found.');
+    const report = await window.axe.run(sample, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (iconButtonAxe.length > 0) throw new Error(`axe-core reported icon-button violations: ${iconButtonAxe.join('; ')}`);
+  const unnamedButtonAxe = await page.evaluate(async () => {
+    const button = document.createElement('nx-icon-button');
+    button.setAttribute('icon', 'close');
+    document.body.append(button);
+    await button.updateComplete;
+    const report = await window.axe.run(button, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
+    });
+    const violations = report.violations.map(({ id }) => id);
+    button.remove();
+    return violations;
+  });
+  if (!unnamedButtonAxe.includes('button-name')) {
+    throw new Error(`axe-core did not detect the missing icon-button name: ${unnamedButtonAxe.join(', ')}.`);
+  }
+
+  await page.evaluate(() => {
+    document.body.tabIndex = -1;
+    document.body.focus();
+  });
   const button = page.locator('#playground-action');
   await page.keyboard.press('Tab');
+  await page.evaluate(() => document.body.removeAttribute('tabindex'));
   if (!(await button.locator('button').evaluate((element) => element.matches(':focus')))) {
     throw new Error('Tab did not move focus to the first playground button.');
   }

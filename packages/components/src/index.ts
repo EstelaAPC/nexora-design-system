@@ -8,3 +8,4 @@ export * from './radio/radio';
 export * from './switch/switch';
 export * from './select/select';
 export * from './icon/icon';
+export * from './icon-button/icon-button';

@@ -42,6 +42,10 @@
     "./icon": {
       "types": "./dist/icon/icon.d.ts",
       "import": "./dist/icon.js"
+    },
+    "./icon-button": {
+      "types": "./dist/icon-button/icon-button.d.ts",
+      "import": "./dist/icon-button.js"
     }
   },
   "scripts": {

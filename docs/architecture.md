@@ -6,6 +6,8 @@ Nexora components are browser Custom Elements prefixed with `nx-`. Lit supplies 
 
 The components package has a package-root entry (`@nexora/components`) and a granular button entry (`@nexora/components/button`). The package build emits both JavaScript entries and declaration files. Consumers can import one registration module for tree-shaking and reduced startup work, or import the root to register all components.
 
+`nx-icon-button` is a granular entry that registers and composes `nx-icon`; it consumes the public icon-name API and does not access SVG assets directly.
+
 ## Framework agnostic
 
 The public component API consists of custom elements, HTML attributes/properties, slots, CSS custom properties, and native DOM events. No React-, Angular-, or Vue-specific wrapper is part of the core package. Framework integrations can bind to the same custom element API.
@@ -17,6 +19,8 @@ The public component API consists of custom elements, HTML attributes/properties
 ## Button behavior and events
 
 `nx-button` renders a native `<button>` rather than recreating button semantics. Its disabled and loading states set the native disabled property; loading also sets `aria-busy` and retains the slotted text. Native `click` bubbles through the custom element; no redundant Nexora click event is emitted.
+
+`nx-icon-button` follows the same native-button and ancestor-form strategy for submit/reset actions, while requiring an explicit accessible name because it has no text slot.
 
 ## Distribution
 

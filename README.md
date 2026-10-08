@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-The playground demonstrates `nx-button`, `nx-input`, `nx-card`, and `nx-badge`.
+The playground demonstrates the public components, including icon buttons and form integration.
 
 ## Consuming the button
 
@@ -48,6 +48,8 @@ Import `@nexora/components` to register all currently available components. Incl
 The button renders a native button, so click and keyboard activation retain browser behavior. Loading disables interaction, exposes `aria-busy`, and keeps slotted button text available as the accessible name. No component-specific click event is added.
 
 `nx-icon` renders named SVG path data from `@nexora/icons` inside its Shadow DOM. Icons are decorative and hidden from assistive technology by default; set `aria-label` or `title` to expose an icon as a named image. The `name` values are `check`, `close`, `plus`, `minus`, `chevron-down`, `chevron-up`, `arrow-left`, `arrow-right`, `info`, `warning`, and `search`. The `size` values are `sm`, `md`, and `lg`; consumers can override size with `--nx-icon-size` and color with the inherited CSS `color`. Unknown names render no SVG without throwing. Each icon is available from its own `@nexora/icons/<name>` ESM subpath so bundlers can split or tree-shake the icon modules.
+
+`nx-icon-button` composes a native button with `nx-icon`; its icon is always decorative, and consumers must provide a meaningful `aria-label` (a development warning is emitted when it is missing). It supports `type="button|submit|reset"` (default `button`), `disabled`, sizes `sm|md|lg`, and variants `primary|secondary|ghost|danger`. It uses the corresponding `nx-button` height, focus, and radius tokens; `--nx-icon-button-radius` can override its radius independently. Import it with `@nexora/components/icon-button`.
 
 Form controls (`nx-input`, `nx-textarea`, `nx-checkbox`, `nx-radio`, `nx-switch`, and `nx-select`) are form-associated custom elements. They use `ElementInternals` for `FormData`, disabled fieldsets, reset, and constraint validation; this requires native Form-Associated Custom Elements support (current Chromium, Firefox, and Safari 16.4+). No polyfill is bundled for older browsers.
 
