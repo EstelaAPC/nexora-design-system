@@ -1,0 +1,24 @@
+:root {
+  /* Button geometry and typography are component-specific design decisions. */
+  --nx-button-height-sm: var(--nx-spacing-8);
+  --nx-button-height-md: calc(var(--nx-spacing-8) + var(--nx-spacing-3));
+  --nx-button-height-lg: calc(var(--nx-spacing-8) + var(--nx-spacing-5));
+  --nx-button-padding-inline-sm: var(--nx-spacing-3);
+  --nx-button-padding-inline-md: var(--nx-spacing-4);
+  --nx-button-padding-inline-lg: var(--nx-spacing-6);
+  --nx-button-radius: var(--nx-radius-md);
+  --nx-button-content-gap: var(--nx-spacing-2);
+  --nx-button-font-size-sm: var(--nx-font-size-sm);
+  --nx-button-font-size-md: var(--nx-font-size-md);
+  --nx-button-font-size-lg: var(--nx-font-size-lg);
+  --nx-button-font-weight: var(--nx-font-weight-semibold);
+  --nx-button-border-width: var(--nx-border-width-thin);
+  --nx-button-focus-width: var(--nx-border-width-focus);
+  --nx-button-shadow: var(--nx-elevation-low);
+
+  /* The switch track has a distinct compact geometry and thumb travel. */
+  --nx-switch-track-width: calc(var(--nx-spacing-8) + var(--nx-spacing-3));
+  --nx-switch-track-height: var(--nx-spacing-6);
+  --nx-switch-thumb-size: calc(var(--nx-spacing-4) + var(--nx-spacing-1));
+  --nx-switch-thumb-inset: var(--nx-spacing-1);
+}

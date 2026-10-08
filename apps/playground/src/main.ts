@@ -26,6 +26,25 @@ if (app) {
         </div>
       </nx-card>
     </section>
+
+    <section class="panel demo-grid">
+      <nx-textarea
+        id="playground-textarea"
+        label="Description"
+        name="description"
+        placeholder="Describe your update"
+        helper-text="Keep it concise."
+        rows="3"
+      ></nx-textarea>
+      <nx-checkbox id="playground-checkbox" name="terms" value="accepted" label="Accept the terms"></nx-checkbox>
+      <nx-checkbox id="playground-indeterminate" indeterminate label="Select all items"></nx-checkbox>
+      <div role="radiogroup" aria-label="Notification preference">
+        <nx-radio name="preference" value="email" label="Email"></nx-radio>
+        <nx-radio name="preference" value="sms" label="SMS"></nx-radio>
+      </div>
+      <nx-switch id="playground-switch" name="notifications" value="enabled" label="Notifications"></nx-switch>
+      <nx-switch disabled label="Disabled switch"></nx-switch>
+    </section>
   `;
 
   const action = app.querySelector('#playground-action');

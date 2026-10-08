@@ -12,7 +12,7 @@ The public component API consists of custom elements, HTML attributes/properties
 
 ## Design tokens and themes
 
-Components consume semantic CSS custom properties rather than embedding theme color choices in their styles. `@nexora/design-tokens` defines primitive and semantic values; `@nexora/theme` imports them and provides document-level aliases and baseline styles. Light is the default. Setting `data-theme="dark"` on the document root or an ancestor switches semantic color tokens, including button colors, without re-registering the element.
+`@nexora/design-tokens` exposes one stylesheet entry organized into primitive, semantic, and component token layers. Components consume CSS custom properties rather than embedding design-system colors, spacing, radius, typography, elevation, or motion choices. Component tokens are limited to genuine component-specific settings (currently button geometry and typography) and derive from shared scales. `@nexora/theme` loads the token entry and applies baseline document styles. Light is the default. Setting `data-theme="dark"` on the document root or an ancestor switches semantic color tokens, including button colors, without re-registering the element. Consumers may override semantic or primitive tokens globally, or scope overrides to a subtree.
 
 ## Button behavior and events
 

@@ -47,6 +47,24 @@ Import `@nexora/components` to register all currently available components. Incl
 
 The button renders a native button, so click and keyboard activation retain browser behavior. Loading disables interaction, exposes `aria-busy`, and keeps slotted button text available as the accessible name. No component-specific click event is added.
 
+## Customizing design tokens
+
+The token entry is organized into primitive, semantic, and component-specific layers. Primitive scales feed semantic roles, and the small component layer derives button-only geometry from those shared scales. Consumers can override the cascade globally or per theme:
+
+```css
+:root {
+  --nx-color-primary: #0066ff;
+  --nx-radius-md: 6px;
+  --nx-spacing-4: 16px;
+}
+
+[data-theme='dark'] {
+  --nx-color-primary: #8ab4ff;
+}
+```
+
+See [docs/design-tokens.md](./docs/design-tokens.md) for the token layering and extension guidance.
+
 ## Commands
 
 ```sh

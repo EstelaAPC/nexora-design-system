@@ -7,15 +7,15 @@ export class NxBadge extends LitElement {
     :host {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.3rem 0.6rem;
-      border-radius: 999px;
-      background: var(--nx-color-brand-100, #e0e7ff);
-      color: var(--nx-color-brand-700, #4338ca);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      font-family: var(--nx-font-sans, sans-serif);
+      gap: var(--nx-spacing-1);
+      padding: var(--nx-spacing-1) var(--nx-spacing-2);
+      border-radius: var(--nx-radius-pill);
+      background: var(--nx-color-badge-background);
+      color: var(--nx-color-badge-text);
+      font-size: var(--nx-font-size-xs);
+      font-weight: var(--nx-font-weight-bold);
+      letter-spacing: var(--nx-letter-spacing-label);
+      font-family: var(--nx-font-family-sans);
     }
   `;
 

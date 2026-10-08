@@ -13,6 +13,22 @@
     "./button": {
       "types": "./dist/button/button.d.ts",
       "import": "./dist/button.js"
+    },
+    "./textarea": {
+      "types": "./dist/textarea/textarea.d.ts",
+      "import": "./dist/textarea.js"
+    },
+    "./checkbox": {
+      "types": "./dist/checkbox/checkbox.d.ts",
+      "import": "./dist/checkbox.js"
+    },
+    "./radio": {
+      "types": "./dist/radio/radio.d.ts",
+      "import": "./dist/radio.js"
+    },
+    "./switch": {
+      "types": "./dist/switch/switch.d.ts",
+      "import": "./dist/switch.js"
     }
   },
   "scripts": {

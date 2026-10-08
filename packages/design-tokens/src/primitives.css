@@ -1,0 +1,75 @@
+:root {
+  /* Color scales */
+  --nx-blue-50: #eef2ff;
+  --nx-blue-100: #e0e7ff;
+  --nx-blue-200: #c7d2fe;
+  --nx-blue-300: #a5b4fc;
+  --nx-blue-400: #818cf8;
+  --nx-blue-500: #6366f1;
+  --nx-blue-600: #4f46e5;
+  --nx-blue-700: #4338ca;
+  --nx-blue-800: #3730a3;
+  --nx-blue-900: #312e81;
+  --nx-gray-0: #ffffff;
+  --nx-gray-50: #f8fafc;
+  --nx-gray-100: #f1f5f9;
+  --nx-gray-200: #e2e8f0;
+  --nx-gray-300: #cbd5e1;
+  --nx-gray-400: #94a3b8;
+  --nx-gray-500: #64748b;
+  --nx-gray-600: #475569;
+  --nx-gray-700: #334155;
+  --nx-gray-800: #1e293b;
+  --nx-gray-900: #0f172a;
+  --nx-gray-950: #080f1e;
+  --nx-green-600: #059669;
+  --nx-green-300: #6ee7b7;
+  --nx-amber-600: #d97706;
+  --nx-amber-300: #fcd34d;
+  --nx-cobalt-600: #2563eb;
+  --nx-sky-400: #60a5fa;
+  --nx-red-300: #fca5a5;
+  --nx-red-600: #dc2626;
+  --nx-red-700: #b91c1c;
+
+  /* Typography scale */
+  --nx-font-family-sans: 'Inter', 'Segoe UI', sans-serif;
+  --nx-font-family-mono: 'JetBrains Mono', monospace;
+  --nx-font-size-xs: 0.75rem;
+  --nx-font-size-sm: 0.875rem;
+  --nx-font-size-md: 1rem;
+  --nx-font-size-lg: 1.125rem;
+  --nx-font-weight-regular: 400;
+  --nx-font-weight-medium: 500;
+  --nx-font-weight-semibold: 600;
+  --nx-font-weight-bold: 700;
+  --nx-letter-spacing-label: 0.02em;
+
+  /* Spacing scale */
+  --nx-spacing-1: 0.25rem;
+  --nx-spacing-2: 0.5rem;
+  --nx-spacing-3: 0.75rem;
+  --nx-spacing-4: 1rem;
+  --nx-spacing-5: 1.25rem;
+  --nx-spacing-6: 1.5rem;
+  --nx-spacing-8: 2rem;
+
+  /* Radius scale */
+  --nx-radius-sm: 0.25rem;
+  --nx-radius-md: 0.5rem;
+  --nx-radius-lg: 0.75rem;
+  --nx-radius-pill: 999px;
+
+  /* Shared implementation scales */
+  --nx-border-width-thin: 1px;
+  --nx-border-width-focus: 3px;
+  --nx-line-height-control: 1;
+  --nx-elevation-low: 0 1px 2px rgb(15 23 42 / 8%);
+  --nx-elevation-medium: 0 10px 30px rgb(15 23 42 / 14%);
+  --nx-elevation-high: 0 20px 60px rgb(15 23 42 / 18%);
+  --nx-motion-duration-fast: 150ms;
+  --nx-motion-duration-spinner: 700ms;
+  --nx-motion-duration-reduced: 0.001ms;
+  --nx-motion-easing-standard: ease;
+  --nx-motion-easing-linear: linear;
+}

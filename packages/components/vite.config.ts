@@ -6,7 +6,11 @@ export default defineConfig({
     lib: {
       entry: {
         index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-        button: fileURLToPath(new URL('./src/button/button.ts', import.meta.url))
+        button: fileURLToPath(new URL('./src/button/button.ts', import.meta.url)),
+        textarea: fileURLToPath(new URL('./src/textarea/textarea.ts', import.meta.url)),
+        checkbox: fileURLToPath(new URL('./src/checkbox/checkbox.ts', import.meta.url)),
+        radio: fileURLToPath(new URL('./src/radio/radio.ts', import.meta.url)),
+        switch: fileURLToPath(new URL('./src/switch/switch.ts', import.meta.url))
       },
       formats: ['es']
     },

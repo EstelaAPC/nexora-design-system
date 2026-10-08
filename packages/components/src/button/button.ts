@@ -25,15 +25,17 @@ export class NxButton extends LitElement {
       width: 100%;
       align-items: center;
       justify-content: center;
-      gap: var(--nx-spacing-2);
-      border: var(--nx-border-width-thin) solid transparent;
-      border-radius: var(--nx-radius-md);
-      background: var(--button-background);
-      color: var(--button-foreground);
-      box-shadow: var(--nx-elevation-button);
+      gap: var(--nx-button-content-gap);
+      min-height: var(--nx-button-height-md);
+      padding-inline: var(--nx-button-padding-inline-md);
+      border: var(--nx-button-border-width) solid transparent;
+      border-radius: var(--nx-button-radius);
+      background: var(--nx-color-primary);
+      color: var(--nx-color-on-primary);
+      box-shadow: var(--nx-button-shadow);
       font-family: inherit;
-      font-size: var(--button-font-size);
-      font-weight: var(--nx-font-weight-semibold);
+      font-size: var(--nx-button-font-size-md);
+      font-weight: var(--nx-button-font-weight);
       line-height: var(--nx-line-height-control);
       cursor: pointer;
       transition:
@@ -44,75 +46,80 @@ export class NxButton extends LitElement {
     }
 
     :host([size='sm']) button {
-      min-height: var(--nx-control-height-sm);
-      padding-inline: var(--nx-spacing-3);
-      --button-font-size: var(--nx-font-size-sm);
-    }
-
-    :host(:not([size])) button,
-    :host([size='md']) button {
-      min-height: var(--nx-control-height-md);
-      padding-inline: var(--nx-spacing-4);
-      --button-font-size: var(--nx-font-size-md);
+      min-height: var(--nx-button-height-sm);
+      padding-inline: var(--nx-button-padding-inline-sm);
+      font-size: var(--nx-button-font-size-sm);
     }
 
     :host([size='lg']) button {
-      min-height: var(--nx-control-height-lg);
-      padding-inline: var(--nx-spacing-6);
-      --button-font-size: var(--nx-font-size-lg);
-    }
-
-    :host(:not([variant])),
-    :host([variant='primary']) {
-      --button-background: var(--nx-color-primary);
-      --button-foreground: var(--nx-color-on-primary);
-      --button-hover: var(--nx-color-primary-hover);
-      --button-active: var(--nx-color-primary-active);
+      min-height: var(--nx-button-height-lg);
+      padding-inline: var(--nx-button-padding-inline-lg);
+      font-size: var(--nx-button-font-size-lg);
     }
 
     :host([variant='secondary']) {
-      --button-background: var(--nx-color-secondary);
-      --button-foreground: var(--nx-color-on-secondary);
-      --button-hover: var(--nx-color-secondary-hover);
-      --button-active: var(--nx-color-secondary-hover);
-      --button-border: var(--nx-color-border);
+      button {
+        background: var(--nx-color-secondary);
+        color: var(--nx-color-on-secondary);
+        border-color: var(--nx-color-border);
+      }
     }
 
     :host([variant='outline']) {
-      --button-background: transparent;
-      --button-foreground: var(--nx-color-outline);
-      --button-hover: var(--nx-color-outline-hover);
-      --button-active: var(--nx-color-outline-hover);
-      --button-border: var(--nx-color-outline);
+      button {
+        background: transparent;
+        color: var(--nx-color-outline);
+        border-color: var(--nx-color-outline);
+      }
     }
 
     :host([variant='ghost']) {
-      --button-background: var(--nx-color-ghost);
-      --button-foreground: var(--nx-color-on-ghost);
-      --button-hover: var(--nx-color-ghost-hover);
-      --button-active: var(--nx-color-ghost-hover);
-      --button-border: transparent;
-      --button-shadow: none;
+      button {
+        background: transparent;
+        color: var(--nx-color-on-ghost);
+        box-shadow: none;
+      }
     }
 
     :host([variant='danger']) {
-      --button-background: var(--nx-color-danger);
-      --button-foreground: var(--nx-color-on-danger);
-      --button-hover: var(--nx-color-danger-hover);
-      --button-active: var(--nx-color-danger-hover);
-    }
-
-    button {
-      border-color: var(--button-border, transparent);
-      box-shadow: var(--button-shadow, var(--nx-elevation-button));
+      button {
+        background: var(--nx-color-error);
+        color: var(--nx-color-on-error);
+      }
     }
 
     button:hover:not(:disabled) {
-      background: var(--button-hover);
+      background: var(--nx-color-primary-hover);
+    }
+
+    :host([variant='secondary']) button:hover:not(:disabled) {
+      background: var(--nx-color-secondary-hover);
+    }
+
+    :host([variant='outline']) button:hover:not(:disabled),
+    :host([variant='ghost']) button:hover:not(:disabled) {
+      background: var(--nx-color-ghost-hover);
+    }
+
+    :host([variant='danger']) button:hover:not(:disabled) {
+      background: var(--nx-color-error-hover);
     }
 
     button:active:not(:disabled) {
-      background: var(--button-active);
+      background: var(--nx-color-primary-active);
+    }
+
+    :host([variant='secondary']) button:active:not(:disabled),
+    :host([variant='outline']) button:active:not(:disabled) {
+      background: var(--nx-color-secondary-hover);
+    }
+
+    :host([variant='ghost']) button:active:not(:disabled) {
+      background: var(--nx-color-ghost-hover);
+    }
+
+    :host([variant='danger']) button:active:not(:disabled) {
+      background: var(--nx-color-error-hover);
     }
 
     button:focus {
@@ -120,9 +127,8 @@ export class NxButton extends LitElement {
     }
 
     button:focus-visible {
-      outline: var(--nx-border-width-focus) solid var(--nx-color-focus-ring);
+      outline: var(--nx-button-focus-width) solid var(--nx-color-focus-ring);
       outline-offset: var(--nx-spacing-1);
-      box-shadow: var(--nx-elevation-focus-ring);
     }
 
     button:disabled {
@@ -149,7 +155,7 @@ export class NxButton extends LitElement {
       border-inline-end-color: transparent;
       border-radius: var(--nx-radius-pill);
       animation:
-        nx-button-spin var(--nx-motion-duration-spinner) var(--nx-motion-easing-spinner)
+        nx-button-spin var(--nx-motion-duration-spinner) var(--nx-motion-easing-linear)
         infinite;
     }
 

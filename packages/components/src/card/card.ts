@@ -6,28 +6,28 @@ export class NxCard extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--nx-surface, var(--nx-color-neutral-0));
-      border: 1px solid var(--nx-border, var(--nx-color-neutral-200));
-      border-radius: var(--nx-radius-lg, 16px);
-      box-shadow: var(--nx-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.08));
+      background: var(--nx-color-surface);
+      border: var(--nx-border-width-thin) solid var(--nx-color-border);
+      border-radius: var(--nx-radius-lg);
+      box-shadow: var(--nx-elevation-low);
       overflow: hidden;
-      font-family: var(--nx-font-sans, sans-serif);
+      font-family: var(--nx-font-family-sans);
     }
 
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
-      padding: 1rem 1.1rem;
-      border-bottom: 1px solid var(--nx-border, var(--nx-color-neutral-200));
-      background: var(--nx-surface-subtle, var(--nx-color-neutral-50));
-      font-weight: 700;
+      gap: var(--nx-spacing-2);
+      padding: var(--nx-spacing-4);
+      border-bottom: var(--nx-border-width-thin) solid var(--nx-color-border);
+      background: var(--nx-color-surface-subtle);
+      font-weight: var(--nx-font-weight-bold);
     }
 
     .content {
-      padding: 1.1rem;
-      color: var(--nx-text-soft, var(--nx-color-neutral-600));
+      padding: var(--nx-spacing-4);
+      color: var(--nx-color-text-secondary);
     }
   `;
 
