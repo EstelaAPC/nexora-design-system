@@ -1,62 +1,29 @@
 # Nexora Design System
 
-Nexora is a framework-agnostic component library based on real Web Components, Lit, TypeScript, and CSS Custom Properties. It is a library—not a finished application—and its custom elements can be consumed from Vanilla JavaScript, Angular, React, or Vue.
+Nexora is a framework-agnostic component library based on real Web Components, Lit, TypeScript, Shadow DOM, Design Tokens, and CSS Custom Properties.
 
-## Workspace
+It is a reusable UI library — not a finished application — and its custom elements can be consumed from Vanilla JavaScript, Angular, React, Vue, or other web applications.
 
-- `packages/components` — Lit-based `nx-*` custom elements.
-- `packages/design-tokens` — primitive and semantic CSS design tokens.
-- `packages/theme` — light/dark theme variables and shared document styles.
-- `packages/icons` — icon utilities.
-- `apps/playground` — browser-rendered component showcase.
-- `docs` — Storybook stories and architecture guidance.
-- `tests` — Vitest/jsdom behavior and axe-core accessibility tests, plus a Playwright browser test.
+The Design System is publicly distributed through npm under the `@nexora-ds` organization.
 
-## Quick start
+---
 
-```sh
-npm install
-npm run dev
-```
+## 📦 NPM Packages
 
-The playground demonstrates `nx-button`, `nx-input`, `nx-card`, and `nx-badge`.
+Nexora is distributed as four independent public npm packages:
 
-## Consuming the button
-
-```js
-import '@nexora/theme';
-import '@nexora/components/button';
-
-document.body.innerHTML = `
-  <nx-button variant="primary" size="md">Save changes</nx-button>
-`;
-```
-
-Import `@nexora/components` to register all currently available components. Include `@nexora/theme` (or the design-token stylesheet) in the document to provide the design token custom properties consumed by components.
-
-`nx-button` API:
-
-| Property | Values | Default |
+| Package | Description | Version |
 | --- | --- | --- |
-| `variant` | `primary`, `secondary`, `outline`, `ghost`, `danger` | `primary` |
-| `size` | `sm`, `md`, `lg` | `md` |
-| `disabled` | Boolean | `false` |
-| `loading` | Boolean | `false` |
-| `fullWidth` | Boolean (`full-width` attribute) | `false` |
-| `type` | `button`, `submit`, `reset` | `button` |
+| `@nexora-ds/components` | Web Components library | `0.1.0` |
+| `@nexora-ds/design-tokens` | Primitive and semantic design tokens | `0.1.0` |
+| `@nexora-ds/theme` | Light/dark theme and shared styles | `0.1.0` |
+| `@nexora-ds/icons` | Icon utilities | `0.1.0` |
 
-The button renders a native button, so click and keyboard activation retain browser behavior. Loading disables interaction, exposes `aria-busy`, and keeps slotted button text available as the accessible name. No component-specific click event is added.
+All packages are publicly available through the npm registry.
 
-## Commands
+### Installation
 
-```sh
-npm run lint
-npm run typecheck
-npm run test
-npm run test:e2e
-npm run build
-npm run storybook
-npm run build-storybook
-```
+Install the main component package:
 
-See [docs/architecture.md](./docs/architecture.md), [docs/design-tokens.md](./docs/design-tokens.md), [docs/accessibility.md](./docs/accessibility.md), and [docs/testing.md](./docs/testing.md) for implementation decisions and validation details.
+```bash
+npm install @nexora-ds/components
