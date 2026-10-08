@@ -91,7 +91,7 @@ export class NxSelect extends NxFormAssociatedElement {
   @property({ type: String }) placeholder = '';
   @property({ type: Boolean, reflect: true }) disabled = false;
   @property({ type: Boolean, reflect: true }) required = false;
-  @property({ type: String, attribute: 'help-text' }) helpText = '';
+  @property({ type: String, attribute: 'helper-text' }) helpText = '';
   @property({ type: String }) error = '';
   @property({ type: String }) autocomplete = '';
   @property({ type: String, attribute: 'aria-label' }) ariaLabel = '';

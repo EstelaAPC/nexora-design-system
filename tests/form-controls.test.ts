@@ -308,6 +308,14 @@ describe('nx-radio', () => {
     ] as const;
   }
 
+  it('uses the native default value when a radio value is omitted', async () => {
+    const element = mount<NxRadio>('nx-radio', { label: 'Default option', name: 'default-option' });
+    await settle(element);
+
+    expect(element.value).toBe('on');
+    expect(element.shadowRoot?.querySelector('input')?.value).toBe('on');
+  });
+
   it('selects one radio and automatically deselects its named peer', async () => {
     const [email, phone] = makeGroup();
     await Promise.all([settle(email), settle(phone)]);

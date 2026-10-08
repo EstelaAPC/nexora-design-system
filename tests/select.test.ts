@@ -35,6 +35,15 @@ describe('nx-select', () => {
     expect(control?.options[1]?.value).toBe('br');
   });
 
+  it('accepts the shared helper-text attribute for helpText', async () => {
+    const element = mount({ label: 'Country' }, '<option value="br">Brazil</option>');
+    element.setAttribute('helper-text', 'Choose your country.');
+    await settle(element);
+
+    expect(element.helpText).toBe('Choose your country.');
+    expect(element.shadowRoot?.querySelector('.message')?.textContent).toBe('Choose your country.');
+  });
+
   it('supports an explicit value and an initially selected option', async () => {
     const explicit = mount({ value: 'us' }, '<option value="br">Brazil</option><option value="us">USA</option>');
     await settle(explicit);

@@ -286,6 +286,7 @@ try {
       <nx-checkbox id="form-terms" name="terms" value="accepted" label="Accept terms" required checked></nx-checkbox>
       <nx-radio id="form-credit" name="payment" value="credit" checked required>Credit</nx-radio>
       <nx-radio id="form-debit" name="payment" value="debit">Debit</nx-radio>
+      <nx-radio id="form-default-radio" name="default-radio" checked>Default option</nx-radio>
       <nx-switch id="form-alerts" name="alerts" value="enabled" label="Alerts" checked></nx-switch>
       <nx-select id="form-country" name="country" label="Country" value="br" required>
         <option value="br">Brazil</option>
@@ -321,6 +322,7 @@ try {
     initialFormData.message !== 'Initial message' ||
     initialFormData.terms !== 'accepted' ||
     initialFormData.payment !== 'credit' ||
+    initialFormData['default-radio'] !== 'on' ||
     initialFormData.alerts !== 'enabled' ||
     initialFormData.country !== 'br' ||
     initialFormData.locked !== 'not-submitted'
@@ -417,6 +419,7 @@ try {
     terms: document.querySelector('#form-terms').checked,
     credit: document.querySelector('#form-credit').checked,
     debit: document.querySelector('#form-debit').checked,
+    defaultRadio: document.querySelector('#form-default-radio').checked,
     alerts: document.querySelector('#form-alerts').checked,
     country: document.querySelector('#form-country').value
   }));
@@ -429,6 +432,7 @@ try {
     !resetState.terms ||
     !resetState.credit ||
     resetState.debit ||
+    !resetState.defaultRadio ||
     !resetState.alerts ||
     resetState.country !== 'br' ||
     resetFormData.payment !== 'credit' ||

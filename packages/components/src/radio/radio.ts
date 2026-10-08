@@ -81,7 +81,7 @@ export class NxRadio extends NxFormAssociatedElement {
   @property({ type: Boolean, reflect: true }) disabled = false;
   @property({ type: Boolean, reflect: true }) required = false;
   @property({ type: String, reflect: true }) name = '';
-  @property({ type: String }) value = '';
+  @property({ type: String }) value = 'on';
   @property({ type: String }) label = '';
   private defaultChecked = false;
 
