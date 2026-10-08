@@ -1,10 +1,11 @@
 {
-  "name": "@nexora/components",
+  "name": "@nexora-ds/components",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": ["dist"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,6 +14,90 @@
     "./button": {
       "types": "./dist/button/button.d.ts",
       "import": "./dist/button.js"
+    },
+    "./input": {
+      "types": "./dist/input/input.d.ts",
+      "import": "./dist/input.js"
+    },
+    "./badge": {
+      "types": "./dist/badge/badge.d.ts",
+      "import": "./dist/badge.js"
+    },
+    "./card": {
+      "types": "./dist/card/card.d.ts",
+      "import": "./dist/card.js"
+    },
+    "./textarea": {
+      "types": "./dist/textarea/textarea.d.ts",
+      "import": "./dist/textarea.js"
+    },
+    "./checkbox": {
+      "types": "./dist/checkbox/checkbox.d.ts",
+      "import": "./dist/checkbox.js"
+    },
+    "./radio": {
+      "types": "./dist/radio/radio.d.ts",
+      "import": "./dist/radio.js"
+    },
+    "./switch": {
+      "types": "./dist/switch/switch.d.ts",
+      "import": "./dist/switch.js"
+    },
+    "./select": {
+      "types": "./dist/select/select.d.ts",
+      "import": "./dist/select.js"
+    },
+    "./icon": {
+      "types": "./dist/icon/icon.d.ts",
+      "import": "./dist/icon.js"
+    },
+    "./icon-button": {
+      "types": "./dist/icon-button/icon-button.d.ts",
+      "import": "./dist/icon-button.js"
+    },
+    "./alert": {
+      "types": "./dist/alert/alert.d.ts",
+      "import": "./dist/alert.js"
+    },
+    "./spinner": {
+      "types": "./dist/spinner/spinner.d.ts",
+      "import": "./dist/spinner.js"
+    },
+    "./progress": {
+      "types": "./dist/progress/progress.d.ts",
+      "import": "./dist/progress.js"
+    },
+    "./toast": {
+      "types": "./dist/toast/toast.d.ts",
+      "import": "./dist/toast.js"
+    },
+    "./tabs": {
+      "types": "./dist/tabs/tabs.d.ts",
+      "import": "./dist/tabs.js"
+    },
+    "./breadcrumb": {
+      "types": "./dist/breadcrumb/breadcrumb.d.ts",
+      "import": "./dist/breadcrumb.js"
+    },
+    "./pagination": {
+      "types": "./dist/pagination/pagination.d.ts",
+      "import": "./dist/pagination.js"
+    },
+    "./dialog": {
+      "types": "./dist/dialog/dialog.d.ts",
+      "import": "./dist/dialog.js"
+    },
+    "./tooltip": {
+      "types": "./dist/tooltip/tooltip.d.ts",
+      "import": "./dist/tooltip.js"
+    },
+    "./popover": {
+      "types": "./dist/popover/popover.d.ts",
+      "import": "./dist/popover.js"
+    },
+    "./table": {
+      "types": "./dist/table/table.d.ts",
+      "import": "./dist/table.js"
     }
   },
   "scripts": {
@@ -20,9 +105,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@nexora/design-tokens": "*",
-    "@nexora/icons": "*",
-    "@nexora/theme": "*",
+    "@nexora-ds/design-tokens": "0.1.0",
+    "@nexora-ds/icons": "0.1.0",
+    "@nexora-ds/theme": "0.1.0",
     "lit": "^3.1.0"
   }
 }

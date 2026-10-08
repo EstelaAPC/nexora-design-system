@@ -1,6 +1,7 @@
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { NxButton } from '../packages/components/src/button/button';
+import type { NxIconButton } from '../packages/components/src/icon-button/icon-button';
 import '../packages/components/src/index';
 
 type UpdateableElement = HTMLElement &
@@ -148,6 +149,151 @@ describe('nx-button accessibility', () => {
       }
     });
 
+    expect(results.violations.map(({ id, help }) => `${id}: ${help}`)).toEqual([]);
+  });
+});
+
+describe('nx-icon-button', () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+    document.documentElement.removeAttribute('data-theme');
+    vi.restoreAllMocks();
+  });
+
+  function createIconButton(attributes: Record<string, string> = {}): HTMLElement & NxIconButton & { updateComplete: Promise<unknown> } {
+    const element = document.createElement('nx-icon-button') as HTMLElement & NxIconButton & { updateComplete: Promise<unknown> };
+    element.setAttribute('aria-label', 'Close dialog');
+    element.setAttribute('icon', 'close');
+    for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
+    document.body.append(element);
+    return element;
+  }
+
+  it('renders a labelled native button with a decorative nx-icon', async () => {
+    const element = createIconButton();
+    await element.updateComplete;
+    await (element.shadowRoot?.querySelector('nx-icon') as HTMLElement & { updateComplete: Promise<unknown> }).updateComplete;
+    const button = element.shadowRoot?.querySelector('button');
+    const icon = element.shadowRoot?.querySelector('nx-icon');
+
+    for (let attempt = 0; attempt < 50 && !icon?.shadowRoot?.querySelector('svg'); attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    expect(button?.tagName).toBe('BUTTON');
+    expect(button?.getAttribute('aria-label')).toBe('Close dialog');
+    expect(button?.type).toBe('button');
+    expect(icon?.getAttribute('name')).toBe('close');
+    expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    expect(icon?.shadowRoot?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('warns in development without inventing an accessible name', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const element = createIconButton();
+    element.removeAttribute('aria-label');
+    await element.updateComplete;
+
+    expect(element.shadowRoot?.querySelector('button')?.hasAttribute('aria-label')).toBe(false);
+    expect(warning).toHaveBeenCalledWith(
+      '<nx-icon-button> requires a meaningful aria-label for an accessible name.'
+    );
+  });
+
+  it('uses native click events and reflects the configured type', async () => {
+    const element = createIconButton({ type: 'submit' });
+    await element.updateComplete;
+    const click = vi.fn();
+    element.addEventListener('click', click);
+    element.shadowRoot?.querySelector('button')?.click();
+
+    expect(element.shadowRoot?.querySelector('button')?.type).toBe('submit');
+    expect(click).toHaveBeenCalledOnce();
+    expect(customElements.get('nx-icon')).toBeDefined();
+  });
+
+  it('uses the native disabled state and updates dynamically', async () => {
+    const element = createIconButton();
+    await element.updateComplete;
+    const button = element.shadowRoot?.querySelector('button');
+    const click = vi.fn();
+    element.addEventListener('click', click);
+    element.disabled = true;
+    await element.updateComplete;
+    button?.click();
+
+    expect(button?.disabled).toBe(true);
+    expect(click).not.toHaveBeenCalled();
+    element.disabled = false;
+    await element.updateComplete;
+    expect(button?.disabled).toBe(false);
+  });
+
+  it.each(['sm', 'md', 'lg'] as const)('supports the %s size and updates icon sizing', async (size) => {
+    const element = createIconButton({ size });
+    await element.updateComplete;
+
+    expect(element.size).toBe(size);
+    expect(element.shadowRoot?.querySelector('nx-icon')?.getAttribute('size')).toBe(size);
+  });
+
+  it.each(['primary', 'secondary', 'ghost', 'danger'] as const)(
+    'supports the %s variant',
+    async (variant) => {
+      const element = createIconButton({ variant });
+      await element.updateComplete;
+      expect(element.variant).toBe(variant);
+      expect(element.getAttribute('variant')).toBe(variant);
+    }
+  );
+
+  it('updates the icon, size, and disabled state when properties change', async () => {
+    const element = createIconButton();
+    await element.updateComplete;
+    element.icon = 'search';
+    element.size = 'lg';
+    element.disabled = true;
+    await element.updateComplete;
+
+    expect(element.shadowRoot?.querySelector('nx-icon')?.getAttribute('name')).toBe('search');
+    expect(element.shadowRoot?.querySelector('nx-icon')?.getAttribute('size')).toBe('lg');
+    expect(element.shadowRoot?.querySelector('button')?.disabled).toBe(true);
+  });
+
+  it('supports focus through the native button', async () => {
+    const element = createIconButton();
+    await element.updateComplete;
+    const button = element.shadowRoot?.querySelector('button');
+    button?.focus();
+
+    expect(element.shadowRoot?.activeElement).toBe(button);
+    expect(button?.tabIndex).toBe(0);
+  });
+});
+
+describe('nx-icon-button accessibility', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it.each([
+    ['default', {}],
+    ['disabled', { disabled: '' }],
+    ...(['primary', 'secondary', 'ghost', 'danger'] as const).map(
+      (variant) => [variant, { variant }] as [string, Record<string, string>]
+    ),
+    ...(['sm', 'md', 'lg'] as const).map(
+      (size) => [`${size} size`, { size }] as [string, Record<string, string>]
+    )
+  ])('has no axe-core WCAG A/AA violations in %s state', async (_state, attributes) => {
+    const element = document.createElement('nx-icon-button') as HTMLElement & NxIconButton & { updateComplete: Promise<unknown> };
+    element.setAttribute('icon', 'close');
+    element.setAttribute('aria-label', 'Close dialog');
+    for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
+    document.body.append(element);
+    await element.updateComplete;
+
+    const results = await axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
     expect(results.violations.map(({ id, help }) => `${id}: ${help}`)).toEqual([]);
   });
 });

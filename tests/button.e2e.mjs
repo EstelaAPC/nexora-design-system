@@ -39,14 +39,411 @@ try {
   await page.goto(baseUrl);
   await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
 
-  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge']) {
+  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select', 'nx-icon', 'nx-icon-button', 'nx-alert', 'nx-spinner', 'nx-progress', 'nx-toast', 'nx-tabs', 'nx-breadcrumb', 'nx-pagination', 'nx-dialog', 'nx-tooltip', 'nx-popover', 'nx-table']) {
     await page.locator(name).first().waitFor({ state: 'attached' });
     const registered = await page.evaluate((tagName) => Boolean(customElements.get(tagName)), name);
     if (!registered) throw new Error(`${name} was present but not registered as a Custom Element.`);
   }
 
+  const playgroundIcon = page.locator('#playground-icon');
+  await playgroundIcon.locator('svg').waitFor({ state: 'attached' });
+  const initialIcon = await playgroundIcon.locator('svg').evaluate((svg) => ({
+    hidden: svg.getAttribute('aria-hidden'),
+    pathCount: svg.querySelectorAll('path').length,
+    pathNamespace: svg.querySelector('path')?.namespaceURI,
+    pathLength: svg.querySelector('path')?.getTotalLength(),
+    width: getComputedStyle(svg.getRootNode().host).width
+  }));
+  if (
+    initialIcon.hidden !== 'true' ||
+    initialIcon.pathCount !== 1 ||
+    initialIcon.pathNamespace !== 'http://www.w3.org/2000/svg' ||
+    initialIcon.pathLength <= 0 ||
+    initialIcon.width !== '20px'
+  ) {
+    throw new Error(`Unexpected default icon rendering: ${JSON.stringify(initialIcon)}.`);
+  }
+  await playgroundIcon.evaluate((element) => {
+    element.setAttribute('name', 'close');
+    element.setAttribute('size', 'lg');
+  });
+  await playgroundIcon.locator('svg path:nth-of-type(2)').waitFor({ state: 'attached' });
+  const changedIcon = await playgroundIcon.locator('svg').evaluate((svg) => ({
+    pathCount: svg.querySelectorAll('path').length,
+    width: getComputedStyle(svg.getRootNode().host).width
+  }));
+  if (changedIcon.pathCount !== 2 || changedIcon.width !== '24px') {
+    throw new Error(`Dynamic icon or size change failed: ${JSON.stringify(changedIcon)}.`);
+  }
+  await playgroundIcon.evaluate((element) => {
+    element.setAttribute('name', 'check');
+    element.setAttribute('size', 'md');
+  });
+  await playgroundIcon.locator('svg path:nth-of-type(2)').waitFor({ state: 'detached' });
+
+  const accessibleIconViolations = await page.evaluate(async () => {
+    const warning = document.querySelector('#playground-icon-gallery nx-icon[aria-label="Warning"]');
+    const button = document.querySelector('#playground-icon-button');
+    if (!warning || !button) throw new Error('Accessible icon examples were not found.');
+    const failures = [];
+    for (const element of [warning, button]) {
+      const report = await window.axe.run(element, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        rules: { 'color-contrast': { enabled: false } }
+      });
+      failures.push(...report.violations.map(({ id, help }) => `${id}: ${help}`));
+    }
+    return failures;
+  });
+  if (accessibleIconViolations.length > 0) {
+    throw new Error(`axe-core reported icon accessibility violations: ${accessibleIconViolations.join('; ')}`);
+  }
+  if (await page.getByRole('button', { name: 'Close dialog' }).count() !== 1) {
+    throw new Error('An icon inside the close button changed its accessible name.');
+  }
+  const lightIconColor = await playgroundIcon.evaluate((element) => getComputedStyle(element).color);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  const darkIconColor = await playgroundIcon.evaluate((element) => getComputedStyle(element).color);
+  if (lightIconColor === darkIconColor) {
+    throw new Error(`Icon color did not inherit the theme: ${lightIconColor}.`);
+  }
+  await playgroundIcon.evaluate((element) => element.style.setProperty('--nx-icon-size', '32px'));
+  const customIconSize = await playgroundIcon.evaluate((element) => getComputedStyle(element).width);
+  if (customIconSize !== '32px') throw new Error(`Custom icon size was not applied: ${customIconSize}.`);
+  await playgroundIcon.evaluate((element) => element.style.removeProperty('--nx-icon-size'));
+  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
+
+  const iconButton = page.locator('#playground-search-button');
+  const iconButtonNative = iconButton.locator('button');
+  if (await page.getByRole('button', { name: 'Search', exact: true }).count() !== 1) {
+    throw new Error('The icon button did not expose its aria-label as the button name.');
+  }
+  await iconButton.evaluate((element) => {
+    window.__iconButtonActivations = 0;
+    element.addEventListener('click', () => { window.__iconButtonActivations += 1; });
+  });
+  await iconButtonNative.focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  if (await page.evaluate(() => window.__iconButtonActivations) !== 2) {
+    throw new Error('The icon button did not preserve native Enter/Space activation.');
+  }
+  const iconButtonFocusStyle = await iconButtonNative.evaluate((element) => ({
+    outlineStyle: getComputedStyle(element).outlineStyle,
+    outlineWidth: getComputedStyle(element).outlineWidth
+  }));
+  if (iconButtonFocusStyle.outlineStyle !== 'solid' || iconButtonFocusStyle.outlineWidth === '0px') {
+    throw new Error(`The icon button focus indicator is not visible: ${JSON.stringify(iconButtonFocusStyle)}.`);
+  }
+  await iconButton.evaluate(async (element) => {
+    element.disabled = true;
+    await element.updateComplete;
+  });
+  if (!(await iconButtonNative.isDisabled())) {
+    throw new Error('The disabled icon button did not disable its native button.');
+  }
+  await iconButtonNative.click({ force: true });
+  if (await page.evaluate(() => window.__iconButtonActivations) !== 2) {
+    throw new Error('A disabled icon button responded to click.');
+  }
+  await iconButton.evaluate(async (element) => {
+    element.disabled = false;
+    element.style.setProperty('--nx-icon-button-radius', '50%');
+    await element.updateComplete;
+  });
+  const iconButtonRadius = await iconButtonNative.evaluate((element) => getComputedStyle(element).borderRadius);
+  if (iconButtonRadius !== '50%') throw new Error(`The icon-button radius token was not applied: ${iconButtonRadius}.`);
+  const lightIconButtonColor = await iconButtonNative.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await page.waitForTimeout(250);
+  const darkIconButtonColor = await iconButtonNative.evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (lightIconButtonColor === darkIconButtonColor) {
+    throw new Error(`The icon button did not adapt to the dark theme: ${lightIconButtonColor}, ${darkIconButtonColor}.`);
+  }
+  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
+
+  await page.locator('#playground-icon-submit button').click();
+  if (await page.locator('#playground-icon-form-status').textContent() !== 'Search submitted') {
+    throw new Error('The icon button did not submit its containing form.');
+  }
+  await page.locator('#playground-icon-button-form input').fill('Changed query');
+  await page.locator('#playground-icon-reset button').click();
+  if (await page.locator('#playground-icon-button-form input').inputValue() !== 'Nexora') {
+    throw new Error('The reset icon button did not reset its containing form.');
+  }
+
+  const iconButtonAxe = await page.evaluate(async () => {
+    const sample = document.querySelector('#playground-search-button');
+    if (!sample) throw new Error('The named icon button sample was not found.');
+    const report = await window.axe.run(sample, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (iconButtonAxe.length > 0) throw new Error(`axe-core reported icon-button violations: ${iconButtonAxe.join('; ')}`);
+  const unnamedButtonAxe = await page.evaluate(async () => {
+    const button = document.createElement('nx-icon-button');
+    button.setAttribute('icon', 'close');
+    document.body.append(button);
+    await button.updateComplete;
+    const report = await window.axe.run(button, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
+    });
+    const violations = report.violations.map(({ id }) => id);
+    button.remove();
+    return violations;
+  });
+  if (!unnamedButtonAxe.includes('button-name')) {
+    throw new Error(`axe-core did not detect the missing icon-button name: ${unnamedButtonAxe.join(', ')}.`);
+  }
+
+  const feedbackState = await page.evaluate(async () => {
+    const alert = document.querySelector('#playground-alert');
+    const spinner = document.querySelector('#playground-spinner');
+    const progress = document.querySelector('#playground-progress');
+    const toast = document.querySelector('#playground-toast');
+    if (!alert || !spinner || !progress || !toast) throw new Error('Feedback playground examples were not found.');
+    await Promise.all([alert, spinner, progress, toast].map((element) => element.updateComplete));
+    return {
+      alertRole: alert.shadowRoot.querySelector('[role]')?.getAttribute('role'),
+      spinnerRole: spinner.shadowRoot.querySelector('.spinner')?.getAttribute('role'),
+      progressMin: progress.shadowRoot.querySelector('[role="progressbar"]')?.getAttribute('aria-valuemin'),
+      progressNow: progress.shadowRoot.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow'),
+      toastRole: toast.shadowRoot.querySelector('[role]')?.getAttribute('role'),
+      toastLive: toast.shadowRoot.querySelector('[role]')?.getAttribute('aria-live')
+    };
+  });
+  if (
+    feedbackState.alertRole !== 'status' ||
+    feedbackState.spinnerRole !== 'status' ||
+    feedbackState.progressMin !== '0' ||
+    feedbackState.progressNow !== '60' ||
+    feedbackState.toastRole !== 'status' ||
+    feedbackState.toastLive !== 'polite'
+  ) {
+    throw new Error(`Feedback component semantics are incorrect: ${JSON.stringify(feedbackState)}.`);
+  }
+  const progress = page.locator('#playground-progress');
+  await progress.evaluate(async (element) => {
+    element.value = 150;
+    await element.updateComplete;
+  });
+  if (await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow') !== '100') {
+    throw new Error('Progress values above max were not normalized.');
+  }
+  await progress.evaluate(async (element) => {
+    element.value = -3;
+    await element.updateComplete;
+  });
+  if (await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow') !== '0') {
+    throw new Error('Negative progress values were not normalized.');
+  }
+  await progress.evaluate(async (element) => {
+    element.value = undefined;
+    await element.updateComplete;
+  });
+  if (await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow') !== null) {
+    throw new Error('Indeterminate progress exposed aria-valuenow.');
+  }
+
+  const feedbackAxe = await page.evaluate(async () => {
+    const samples = ['#playground-alert', '#playground-spinner', '#playground-progress', '#playground-toast'];
+    const violations = [];
+    for (const selector of samples) {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`Missing feedback element ${selector}.`);
+      const report = await window.axe.run(element, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        rules: { 'color-contrast': { enabled: false } }
+      });
+      violations.push(...report.violations.map(({ id, help }) => `${selector}: ${id}: ${help}`));
+    }
+    return violations;
+  });
+  if (feedbackAxe.length > 0) throw new Error(`Feedback axe-core violations: ${feedbackAxe.join('; ')}`);
+
+  await page.evaluate(() => {
+    window.__feedbackDismissEvents = 0;
+    document.addEventListener('nx-dismiss', () => { window.__feedbackDismissEvents += 1; });
+  });
+  await page.getByRole('button', { name: 'Dismiss notification' }).click();
+  if (await page.locator('#playground-toast').getAttribute('open') !== null) {
+    throw new Error('Manual toast dismissal did not close the toast.');
+  }
+  await page.getByRole('button', { name: 'Dismiss alert' }).click();
+  if (await page.locator('#playground-alert').count() !== 0) {
+    throw new Error('Manual alert dismissal did not remove the alert.');
+  }
+  if (await page.evaluate(() => window.__feedbackDismissEvents) !== 2) {
+    throw new Error('Feedback dismissals did not emit bubbling nx-dismiss events.');
+  }
+
+  const breadcrumb = page.locator('#playground-breadcrumb');
+  if (
+    await breadcrumb.getByRole('navigation', { name: 'Page location' }).count() !== 1 ||
+    await breadcrumb.locator('[aria-current="page"]').textContent() !== 'Navigation'
+  ) {
+    throw new Error('Breadcrumb navigation did not expose its label and current page.');
+  }
+  const tabs = page.locator('#playground-tabs');
+  const tabButtons = tabs.locator('button[slot="tab"]');
+  await tabButtons.nth(0).focus();
+  await page.keyboard.press('ArrowRight');
+  if (
+    await tabButtons.nth(1).getAttribute('aria-selected') !== 'true' ||
+    await tabButtons.nth(1).evaluate((element) => element !== document.activeElement)
+  ) {
+    throw new Error('ArrowRight did not focus and automatically activate the next tab.');
+  }
+  await page.keyboard.press('End');
+  if (await tabButtons.nth(1).getAttribute('aria-selected') !== 'true') {
+    throw new Error('End did not activate the last tab.');
+  }
+  await page.keyboard.press('Home');
+  if (await tabButtons.nth(0).getAttribute('aria-selected') !== 'true') {
+    throw new Error('Home did not activate the first tab.');
+  }
+  const pagination = page.locator('#playground-pagination');
+  await page.evaluate(() => {
+    window.__pageChangeDetail = undefined;
+    document.querySelector('#playground-pagination')?.addEventListener('nx-page-change', (event) => {
+      window.__pageChangeDetail = event.detail;
+    });
+  });
+  await pagination.getByRole('button', { name: 'Next page' }).click();
+  if (
+    await pagination.evaluate((element) => element.currentPage) !== 4 ||
+    (await page.evaluate(() => window.__pageChangeDetail))?.page !== 4
+  ) {
+    throw new Error('Pagination did not update and emit nx-page-change with the next page.');
+  }
+  const navigationAxe = await page.evaluate(async () => {
+    const violations = [];
+    for (const selector of ['#playground-breadcrumb', '#playground-tabs', '#playground-pagination']) {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`Missing navigation element ${selector}.`);
+      const report = await window.axe.run(element, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        rules: { 'color-contrast': { enabled: false } }
+      });
+      violations.push(...report.violations.map(({ id, help }) => `${selector}: ${id}: ${help}`));
+    }
+    return violations;
+  });
+  if (navigationAxe.length > 0) throw new Error(`Navigation axe-core violations: ${navigationAxe.join('; ')}`);
+
+  const dialog = page.locator('#playground-dialog');
+  const dialogNative = dialog.locator('dialog');
+  await page.locator('#playground-open-dialog').click();
+  if (!(await dialogNative.evaluate((element) => element.open))) {
+    throw new Error('Dialog trigger did not open the native dialog.');
+  }
+  if (await dialogNative.getAttribute('aria-labelledby') === null) {
+    throw new Error('Native dialog does not reference its accessible title.');
+  }
+  const dialogAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-dialog');
+    if (!element) throw new Error('Dialog example is missing.');
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (dialogAxe.length > 0) throw new Error(`Dialog axe-core violations: ${dialogAxe.join('; ')}`);
+  await page.keyboard.press('Escape');
+  if (await dialogNative.evaluate((element) => element.open)) {
+    throw new Error('Escape did not close the native modal dialog.');
+  }
+  if (!(await page.locator('#playground-open-dialog').evaluate((element) => element === document.activeElement))) {
+    throw new Error('Dialog close did not restore focus to its opener.');
+  }
+
+  const tooltip = page.locator('#playground-tooltip');
+  const tooltipTrigger = tooltip.locator('button');
+  await tooltipTrigger.focus();
+  if (!(await tooltip.locator('[role="tooltip"]').isVisible())) {
+    throw new Error('Tooltip did not appear when its trigger received keyboard focus.');
+  }
+  if (!(await tooltipTrigger.getAttribute('aria-describedby'))?.includes('nx-tooltip-')) {
+    throw new Error('Tooltip description was not connected to the trigger.');
+  }
+  await page.keyboard.press('Escape');
+  if (await tooltip.locator('[role="tooltip"]').isVisible()) {
+    throw new Error('Escape did not dismiss the focused tooltip.');
+  }
+  const tooltipAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-tooltip');
+    if (!element) throw new Error('Tooltip example is missing.');
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (tooltipAxe.length > 0) throw new Error(`Tooltip axe-core violations: ${tooltipAxe.join('; ')}`);
+
+  const popover = page.locator('#playground-popover');
+  await popover.locator('.trigger').click();
+  if (await popover.getAttribute('open') === null || !(await popover.locator('.surface').isVisible())) {
+    throw new Error('Popover trigger did not show its content.');
+  }
+  await page.keyboard.press('Escape');
+  if (await popover.getAttribute('open') !== null) {
+    throw new Error('Escape did not close the popover.');
+  }
+  if (!(await popover.evaluate((element) =>
+    element.shadowRoot?.activeElement === element.shadowRoot?.querySelector('.trigger')
+  ))) {
+    throw new Error('Popover close did not restore focus to its trigger.');
+  }
+  await popover.locator('.trigger').click();
+  await page.locator('#app > section:nth-of-type(1) h1').click();
+  if (await popover.getAttribute('open') !== null) {
+    throw new Error('Clicking outside the popover did not dismiss it.');
+  }
+  const popoverAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-popover');
+    if (!element) throw new Error('Popover example is missing.');
+    element.open = true;
+    await element.updateComplete;
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (popoverAxe.length > 0) throw new Error(`Popover axe-core violations: ${popoverAxe.join('; ')}`);
+  await popover.evaluate((element) => element.close());
+
+  const table = page.locator('#playground-table');
+  const nativeTable = table.locator('table');
+  if (
+    await nativeTable.locator('caption').textContent() !== 'Team directory' ||
+    await nativeTable.locator('thead th[scope="col"]').count() !== 3 ||
+    await nativeTable.locator('tbody th[scope="row"]').count() !== 3 ||
+    await nativeTable.locator('tbody tr').count() !== 3
+  ) {
+    throw new Error('nx-table did not render the caption, native headers, and rows correctly.');
+  }
+  const tableAxe = await page.evaluate(async () => {
+    const element = document.querySelector('#playground-table');
+    if (!element) throw new Error('Table example is missing.');
+    const report = await window.axe.run(element, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      rules: { 'color-contrast': { enabled: false } }
+    });
+    return report.violations.map(({ id, help }) => `${id}: ${help}`);
+  });
+  if (tableAxe.length > 0) throw new Error(`Table axe-core violations: ${tableAxe.join('; ')}`);
+
+  await page.evaluate(() => {
+    document.body.tabIndex = -1;
+    document.body.focus();
+  });
   const button = page.locator('#playground-action');
   await page.keyboard.press('Tab');
+  await page.evaluate(() => document.body.removeAttribute('tabindex'));
   if (!(await button.locator('button').evaluate((element) => element.matches(':focus')))) {
     throw new Error('Tab did not move focus to the first playground button.');
   }
@@ -103,12 +500,73 @@ try {
     throw new Error(`axe-core reported accessibility violations:\n${accessibilityViolations.join('\n')}`);
   }
 
+  await button.evaluate((element) => {
+    element.setAttribute('variant', 'primary');
+    element.setAttribute('size', 'md');
+    element.removeAttribute('disabled');
+    element.removeAttribute('loading');
+  });
+  await button.evaluate((element) => element.updateComplete);
+  await page.mouse.move(0, 0);
+
   const lightBackground = await button.locator('button').evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--nx-color-primary', '#0066ff');
+    document.documentElement.style.setProperty('--nx-spacing-4', '20px');
+    document.documentElement.style.setProperty('--nx-radius-md', '6px');
+    document.documentElement.style.setProperty('--nx-button-radius', '10px');
+  });
+  await page.waitForTimeout(200);
+  const customized = await button.locator('button').evaluate((element) => ({
+    background: getComputedStyle(element).backgroundColor,
+    paddingInline: getComputedStyle(element).paddingInline,
+    borderRadius: getComputedStyle(element).borderRadius
+  }));
+  const customizedTextarea = await page.locator('#playground-textarea').evaluate((element) => {
+    const textarea = element.shadowRoot.querySelector('textarea');
+    return textarea ? getComputedStyle(textarea).paddingRight : '';
+  });
+  await page.locator('#playground-checkbox').evaluate(async (element) => {
+    element.checked = true;
+    await element.updateComplete;
+  });
+  const customizedCheckboxBackground = await page.locator('#playground-checkbox input').evaluate(
+    (element) => getComputedStyle(element).backgroundColor
+  );
+  if (
+    customized.background !== 'rgb(0, 102, 255)' ||
+    customized.paddingInline !== '20px' ||
+    customized.borderRadius !== '10px' ||
+    customizedTextarea !== '20px' ||
+    customizedCheckboxBackground !== 'rgb(0, 102, 255)'
+  ) {
+    throw new Error(`Global token overrides were not applied: ${JSON.stringify({
+      button: customized,
+      textareaPaddingRight: customizedTextarea,
+      checkboxBackground: customizedCheckboxBackground
+    })}.`);
+  }
+  await page.evaluate(() => {
+    document.documentElement.style.removeProperty('--nx-color-primary');
+    document.documentElement.style.removeProperty('--nx-spacing-4');
+    document.documentElement.style.removeProperty('--nx-radius-md');
+    document.documentElement.style.removeProperty('--nx-button-radius');
+  });
+  const lightTextareaSurface = await page.locator('#playground-textarea').evaluate((element) => {
+    const textarea = element.shadowRoot.querySelector('textarea');
+    return textarea ? getComputedStyle(textarea).backgroundColor : '';
+  });
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   await page.waitForTimeout(200);
   const darkBackground = await button.locator('button').evaluate((element) => getComputedStyle(element).backgroundColor);
+  const darkTextareaSurface = await page.locator('#playground-textarea textarea').evaluate(
+    (element) => getComputedStyle(element).backgroundColor
+  );
   if (lightBackground === darkBackground) {
     throw new Error(`Button styles did not respond to the dark theme: ${lightBackground}.`);
+  }
+  if (lightTextareaSurface === darkTextareaSurface) {
+    throw new Error(`Textarea surface did not respond to the dark theme: ${lightTextareaSurface}.`);
   }
   await button.locator('button').click();
 
@@ -123,7 +581,297 @@ try {
   if (fullWidthDisplay !== 'flex') {
     throw new Error(`Expected full-width host display to be flex, got ${fullWidthDisplay}.`);
   }
-  console.log('PASS: playground registration, click/keyboard/focus, full width, theme, and axe checks.');
+
+  const textarea = page.locator('#playground-textarea');
+  await textarea.evaluate((element) => {
+    element.addEventListener('nx-change', (event) => {
+      window.__textareaChangeDetail = event.detail;
+    });
+  });
+  await textarea.getByRole('textbox', { name: 'Description' }).fill('Browser update');
+  const textareaDetail = await page.evaluate(() => window.__textareaChangeDetail);
+  if (textareaDetail?.value !== 'Browser update') {
+    throw new Error(`Textarea did not emit its typed value change: ${JSON.stringify(textareaDetail)}.`);
+  }
+
+  const checkbox = page.locator('#playground-checkbox');
+  const checkboxInput = checkbox.locator('input');
+  await checkbox.evaluate(async (element) => {
+    element.checked = false;
+    element.disabled = false;
+    element.indeterminate = false;
+    await element.updateComplete;
+  });
+  await checkboxInput.click();
+  if (!(await checkboxInput.isChecked())) throw new Error('Checkbox did not toggle on click.');
+  await checkboxInput.focus();
+  await page.keyboard.press('Space');
+  if (await checkboxInput.isChecked()) throw new Error('Checkbox did not toggle off with Space.');
+
+  const emailRadio = page.locator('nx-radio[name="preference"][value="email"]');
+  const smsRadio = page.locator('nx-radio[name="preference"][value="sms"]');
+  await emailRadio.locator('input').click();
+  await smsRadio.locator('input').click();
+  const radioState = await page.evaluate(() => ({
+    email: document.querySelector('nx-radio[value="email"]')?.checked,
+    sms: document.querySelector('nx-radio[value="sms"]')?.checked
+  }));
+  if (radioState.email || !radioState.sms) {
+    throw new Error(`Radio group did not keep the last selected value: ${JSON.stringify(radioState)}.`);
+  }
+
+  const toggle = page.getByRole('switch', { name: 'Notifications' });
+  await toggle.focus();
+  await page.keyboard.press('Space');
+  if (await toggle.getAttribute('aria-checked') !== 'true') {
+    throw new Error('Switch did not turn on or synchronize aria-checked from Space.');
+  }
+
+  const playgroundSelect = page.locator('#playground-select select');
+  await playgroundSelect.focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  if (await page.locator('#playground-select').getAttribute('value') !== 'br') {
+    throw new Error('Native select keyboard interaction did not select the first option.');
+  }
+  await page.locator('#playground-select').evaluate(async (element) => {
+    element.style.setProperty('--nx-select-height', '56px');
+    await element.updateComplete;
+  });
+  const selectHeight = await playgroundSelect.evaluate((element) => getComputedStyle(element).minHeight);
+  if (selectHeight !== '56px') throw new Error(`Select token override was not applied: ${selectHeight}.`);
+
+  const formViolations = await page.evaluate(async () => {
+    const controls = [
+      ['nx-textarea', [{ error: '' }, { error: 'Invalid value.' }, { disabled: true }]],
+      ['nx-checkbox', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }, { indeterminate: true }]],
+      ['nx-radio', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }]],
+      ['nx-switch', [{ checked: false, disabled: false }, { checked: true }, { disabled: true }]],
+      ['nx-select', [{ value: '' }, { value: 'br' }, { disabled: true }, { error: 'Invalid value.' }]]
+    ];
+    const failures = [];
+    for (const [selector, states] of controls) {
+      const hostElement = document.querySelector(selector);
+      if (!hostElement) throw new Error(`Missing ${selector} in playground.`);
+      for (const state of states) {
+        Object.assign(hostElement, state);
+        await hostElement.updateComplete;
+        const report = await window.axe.run(hostElement, {
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
+        });
+        failures.push(...report.violations.map(({ id, help, nodes }) => JSON.stringify({
+          selector,
+          state,
+          id,
+          help,
+          nodes: nodes.map(({ target, failureSummary }) => ({ target, failureSummary }))
+        })));
+      }
+    }
+    return failures;
+  });
+  if (formViolations.length > 0) {
+    throw new Error(`Form control axe violations:\n${formViolations.join('\n')}`);
+  }
+
+  await page.evaluate(async () => {
+    const form = document.createElement('form');
+    form.id = 'native-api-form';
+    form.innerHTML = `
+      <nx-input id="form-email" name="email" value="estela@example.com" type="email" required minlength="6" maxlength="80"></nx-input>
+      <nx-textarea id="form-message" name="message" value="Initial message" required minlength="4" maxlength="120"></nx-textarea>
+      <nx-checkbox id="form-terms" name="terms" value="accepted" label="Accept terms" required checked></nx-checkbox>
+      <nx-radio id="form-credit" name="payment" value="credit" checked required>Credit</nx-radio>
+      <nx-radio id="form-debit" name="payment" value="debit">Debit</nx-radio>
+      <nx-radio id="form-default-radio" name="default-radio" checked>Default option</nx-radio>
+      <nx-switch id="form-alerts" name="alerts" value="enabled" label="Alerts" checked></nx-switch>
+      <nx-select id="form-country" name="country" label="Country" value="br" required>
+        <option value="br">Brazil</option>
+        <option value="us">United States</option>
+      </nx-select>
+      <fieldset id="form-disabled-group">
+        <nx-input id="form-locked" name="locked" value="not-submitted" label="Locked"></nx-input>
+        <nx-select id="form-locked-country" name="locked-country" label="Locked country" value="br">
+          <option value="br">Brazil</option>
+        </nx-select>
+      </fieldset>
+      <nx-button id="form-submit" type="submit">Send</nx-button>
+      <nx-button id="form-reset" type="reset">Reset</nx-button>
+    `;
+    document.body.append(form);
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      window.__formSubmitCount = (window.__formSubmitCount ?? 0) + 1;
+    });
+    await Promise.all(Array.from(form.querySelectorAll('*')).map((element) =>
+      'updateComplete' in element ? element.updateComplete : Promise.resolve()
+    ));
+  });
+
+  const formValidity = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  if (!formValidity) throw new Error('The initially complete custom-element form should be valid.');
+  const initialFormData = await page.locator('#native-api-form').evaluate((form) => {
+    const data = new FormData(form);
+    return Object.fromEntries(data.entries());
+  });
+  if (
+    initialFormData.email !== 'estela@example.com' ||
+    initialFormData.message !== 'Initial message' ||
+    initialFormData.terms !== 'accepted' ||
+    initialFormData.payment !== 'credit' ||
+    initialFormData['default-radio'] !== 'on' ||
+    initialFormData.alerts !== 'enabled' ||
+    initialFormData.country !== 'br' ||
+    initialFormData.locked !== 'not-submitted'
+  ) {
+    throw new Error(`Unexpected FormData for associated custom elements: ${JSON.stringify(initialFormData)}.`);
+  }
+
+  await page.locator('#form-debit input').click();
+  await page.locator('#form-alerts input').click();
+  await page.locator('#form-terms input').click();
+  const uncheckedData = await page.locator('#native-api-form').evaluate((form) =>
+    Object.fromEntries(new FormData(form).entries())
+  );
+  if ('terms' in uncheckedData || uncheckedData.payment !== 'debit' || 'alerts' in uncheckedData) {
+    throw new Error(`Unchecked controls or radio group submitted incorrect values: ${JSON.stringify(uncheckedData)}.`);
+  }
+  await page.evaluate(async () => {
+    const credit = document.querySelector('#form-credit');
+    const debit = document.querySelector('#form-debit');
+    credit.checked = false;
+    debit.checked = false;
+    await Promise.all([credit.updateComplete, debit.updateComplete]);
+  });
+  const missingRadioValid = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  if (missingRadioValid) throw new Error('Required radio group was valid with no selection.');
+  await page.locator('#form-credit input').click();
+  const requiredValid = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  if (requiredValid || !(await page.locator('#form-terms input').getAttribute('aria-invalid'))) {
+    throw new Error('Required checkbox did not participate in the Constraint Validation API.');
+  }
+  await page.locator('#form-terms input').check();
+
+  const emailInput = page.locator('#form-email input');
+  await emailInput.fill('');
+  const missingEmailValid = await page.locator('#native-api-form').evaluate((form) => form.checkValidity());
+  const missingEmailReport = await emailInput.evaluate((element) => element.getRootNode().host.reportValidity());
+  if (missingEmailValid || missingEmailReport) {
+    throw new Error('Required input did not block validity and reportValidity while empty.');
+  }
+  await page.locator('#form-submit button').click();
+  if (await page.evaluate(() => window.__formSubmitCount ?? 0) !== 0) {
+    throw new Error('Invalid required controls did not prevent form submission.');
+  }
+  await emailInput.fill('estela@example.com');
+
+  const message = page.locator('#form-message textarea');
+  await message.fill('x');
+  const minlengthValid = await page.locator('#form-message').evaluate((element) => element.checkValidity());
+  if (minlengthValid) throw new Error('Textarea minlength did not invalidate a too-short user value.');
+  await message.fill('Long enough message');
+  if (!(await page.locator('#form-message').evaluate((element) => element.checkValidity()))) {
+    throw new Error('Textarea did not become valid after its value met minlength.');
+  }
+
+  await page.locator('#form-country select').selectOption('us');
+  if (await page.locator('#form-country').getAttribute('value') !== 'us') {
+    throw new Error('Select interaction did not update the custom element value.');
+  }
+  const changedCountryData = await page.locator('#native-api-form').evaluate((form) =>
+    new FormData(form).get('country')
+  );
+  if (changedCountryData !== 'us') {
+    throw new Error(`Changed select value was not reflected in FormData: ${changedCountryData}.`);
+  }
+
+  const fieldset = page.locator('#form-disabled-group');
+  await fieldset.evaluate((element) => { element.disabled = true; });
+  await page.waitForTimeout(50);
+  const disabledFieldsetData = await page.locator('#native-api-form').evaluate((form) =>
+    Object.fromEntries(new FormData(form).entries())
+  );
+  const disabledInternal = await page.locator('#form-locked input').isDisabled();
+  const disabledSelect = await page.locator('#form-locked-country select').isDisabled();
+  if ('locked' in disabledFieldsetData || 'locked-country' in disabledFieldsetData || !disabledInternal || !disabledSelect) {
+    throw new Error('fieldset[disabled] did not disable and exclude associated input and select controls.');
+  }
+  await fieldset.evaluate((element) => { element.disabled = false; });
+  await page.waitForTimeout(50);
+
+  await page.locator('#form-submit button').click();
+  const submitCount = await page.evaluate(() => window.__formSubmitCount);
+  if (submitCount !== 1) throw new Error(`Expected one valid form submit, received ${submitCount}.`);
+
+  await page.locator('#form-email input').fill('changed@example.com');
+  await page.locator('#form-message textarea').fill('Changed');
+  await page.locator('#form-debit input').click();
+  await page.locator('#form-alerts input').click();
+  await page.locator('#form-country select').selectOption('us');
+  await page.locator('#form-reset button').click();
+  await page.waitForTimeout(50);
+  const resetState = await page.evaluate(() => ({
+    email: document.querySelector('#form-email').value,
+    message: document.querySelector('#form-message').value,
+    terms: document.querySelector('#form-terms').checked,
+    credit: document.querySelector('#form-credit').checked,
+    debit: document.querySelector('#form-debit').checked,
+    defaultRadio: document.querySelector('#form-default-radio').checked,
+    alerts: document.querySelector('#form-alerts').checked,
+    country: document.querySelector('#form-country').value
+  }));
+  const resetFormData = await page.locator('#native-api-form').evaluate((form) =>
+    Object.fromEntries(new FormData(form).entries())
+  );
+  if (
+    resetState.email !== 'estela@example.com' ||
+    resetState.message !== 'Initial message' ||
+    !resetState.terms ||
+    !resetState.credit ||
+    resetState.debit ||
+    !resetState.defaultRadio ||
+    !resetState.alerts ||
+    resetState.country !== 'br' ||
+    resetFormData.payment !== 'credit' ||
+    resetFormData.terms !== 'accepted' ||
+    resetFormData.alerts !== 'enabled' ||
+    resetFormData.country !== 'br'
+  ) {
+    throw new Error(`Form reset did not restore defaults/FormData: ${JSON.stringify({ resetState, resetFormData })}.`);
+  }
+
+  await page.evaluate(async () => {
+    const form = document.createElement('form');
+    form.id = 'required-select-form';
+    form.innerHTML = `
+      <nx-select id="required-country" name="required-country" label="Required country" required>
+        <option value="br">Brazil</option>
+      </nx-select>
+    `;
+    document.body.append(form);
+    await Promise.all(Array.from(form.querySelectorAll('*')).map((element) =>
+      'updateComplete' in element ? element.updateComplete : Promise.resolve()
+    ));
+  });
+  const requiredCountryValid = await page.locator('#required-select-form').evaluate((form) => form.checkValidity());
+  const requiredCountryReport = await page.locator('#required-country').evaluate((element) => element.reportValidity());
+  if (requiredCountryValid || requiredCountryReport) {
+    throw new Error('Required select did not block form validity or reportValidity when empty.');
+  }
+  const requiredCountryInvalid = await page.locator('#required-country select').getAttribute('aria-invalid');
+  if (requiredCountryInvalid !== 'true') throw new Error('Required select did not expose aria-invalid.');
+
+  const selectTheme = await page.locator('#playground-select select').evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+  await page.waitForTimeout(100);
+  const selectLightTheme = await page.locator('#playground-select select').evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await page.waitForTimeout(100);
+  const selectDarkTheme = await page.locator('#playground-select select').evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (selectLightTheme === selectDarkTheme || !selectTheme) {
+    throw new Error(`Select surface did not respond to theme changes: ${selectLightTheme}, ${selectDarkTheme}.`);
+  }
+  console.log('PASS: playground elements, controls, keyboard, forms, themes, token overrides, and axe checks.');
 } finally {
   if (browser) await browser.close();
   vite.kill();
