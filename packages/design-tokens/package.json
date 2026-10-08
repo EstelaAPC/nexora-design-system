@@ -2,8 +2,12 @@
   "name": "@nexora/design-tokens",
   "version": "0.1.0",
   "type": "module",
-  "main": "./src/index.css",
+  "main": "./dist/index.css",
+  "files": ["dist"],
+  "scripts": {
+    "build": "node build.mjs"
+  },
   "exports": {
-    ".": "./src/index.css"
+    ".": "./dist/index.css"
   }
 }

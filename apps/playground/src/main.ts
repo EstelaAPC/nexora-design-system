@@ -18,6 +18,18 @@ if (app) {
     </section>
 
     <section class="panel">
+      <h2>Icons</h2>
+      <div id="playground-icon-gallery" class="icon-gallery">
+        <span><nx-icon id="playground-icon" name="check" size="md"></nx-icon> Check</span>
+        <span><nx-icon name="search" size="sm"></nx-icon> Search</span>
+        <span><nx-icon name="warning" size="lg" aria-label="Warning"></nx-icon> Warning</span>
+        <button id="playground-icon-button" type="button" aria-label="Close dialog">
+          <nx-icon name="close"></nx-icon>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
       <nx-card title="Form demo">
         <nx-input label="Email" type="email" placeholder="name@example.com"></nx-input>
         <div style="margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center;">

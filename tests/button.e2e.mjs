@@ -39,11 +39,71 @@ try {
   await page.goto(baseUrl);
   await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
 
-  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select']) {
+  for (const name of ['nx-button', 'nx-input', 'nx-card', 'nx-badge', 'nx-textarea', 'nx-checkbox', 'nx-radio', 'nx-switch', 'nx-select', 'nx-icon']) {
     await page.locator(name).first().waitFor({ state: 'attached' });
     const registered = await page.evaluate((tagName) => Boolean(customElements.get(tagName)), name);
     if (!registered) throw new Error(`${name} was present but not registered as a Custom Element.`);
   }
+
+  const playgroundIcon = page.locator('#playground-icon');
+  await playgroundIcon.locator('svg').waitFor({ state: 'attached' });
+  const initialIcon = await playgroundIcon.locator('svg').evaluate((svg) => ({
+    hidden: svg.getAttribute('aria-hidden'),
+    pathCount: svg.querySelectorAll('path').length,
+    width: getComputedStyle(svg.getRootNode().host).width
+  }));
+  if (initialIcon.hidden !== 'true' || initialIcon.pathCount !== 1 || initialIcon.width !== '20px') {
+    throw new Error(`Unexpected default icon rendering: ${JSON.stringify(initialIcon)}.`);
+  }
+  await playgroundIcon.evaluate((element) => {
+    element.setAttribute('name', 'close');
+    element.setAttribute('size', 'lg');
+  });
+  await playgroundIcon.locator('svg path:nth-of-type(2)').waitFor({ state: 'attached' });
+  const changedIcon = await playgroundIcon.locator('svg').evaluate((svg) => ({
+    pathCount: svg.querySelectorAll('path').length,
+    width: getComputedStyle(svg.getRootNode().host).width
+  }));
+  if (changedIcon.pathCount !== 2 || changedIcon.width !== '24px') {
+    throw new Error(`Dynamic icon or size change failed: ${JSON.stringify(changedIcon)}.`);
+  }
+  await playgroundIcon.evaluate((element) => {
+    element.setAttribute('name', 'check');
+    element.setAttribute('size', 'md');
+  });
+  await playgroundIcon.locator('svg path:nth-of-type(2)').waitFor({ state: 'detached' });
+
+  const accessibleIconViolations = await page.evaluate(async () => {
+    const warning = document.querySelector('#playground-icon-gallery nx-icon[aria-label="Warning"]');
+    const button = document.querySelector('#playground-icon-button');
+    if (!warning || !button) throw new Error('Accessible icon examples were not found.');
+    const failures = [];
+    for (const element of [warning, button]) {
+      const report = await window.axe.run(element, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        rules: { 'color-contrast': { enabled: false } }
+      });
+      failures.push(...report.violations.map(({ id, help }) => `${id}: ${help}`));
+    }
+    return failures;
+  });
+  if (accessibleIconViolations.length > 0) {
+    throw new Error(`axe-core reported icon accessibility violations: ${accessibleIconViolations.join('; ')}`);
+  }
+  if (await page.getByRole('button', { name: 'Close dialog' }).count() !== 1) {
+    throw new Error('An icon inside the close button changed its accessible name.');
+  }
+  const lightIconColor = await playgroundIcon.evaluate((element) => getComputedStyle(element).color);
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  const darkIconColor = await playgroundIcon.evaluate((element) => getComputedStyle(element).color);
+  if (lightIconColor === darkIconColor) {
+    throw new Error(`Icon color did not inherit the theme: ${lightIconColor}.`);
+  }
+  await playgroundIcon.evaluate((element) => element.style.setProperty('--nx-icon-size', '32px'));
+  const customIconSize = await playgroundIcon.evaluate((element) => getComputedStyle(element).width);
+  if (customIconSize !== '32px') throw new Error(`Custom icon size was not applied: ${customIconSize}.`);
+  await playgroundIcon.evaluate((element) => element.style.removeProperty('--nx-icon-size'));
+  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
 
   const button = page.locator('#playground-action');
   await page.keyboard.press('Tab');

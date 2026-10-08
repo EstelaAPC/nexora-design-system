@@ -2,8 +2,15 @@
   "name": "@nexora/theme",
   "version": "0.1.0",
   "type": "module",
-  "main": "./src/index.css",
+  "main": "./dist/index.css",
+  "files": ["dist"],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@nexora/design-tokens": "*"
+  },
   "exports": {
-    ".": "./src/index.css"
+    ".": "./dist/index.css"
   }
 }

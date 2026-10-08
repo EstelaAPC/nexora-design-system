@@ -32,3 +32,16 @@ body {
   box-shadow: var(--nx-elevation-low);
   padding: 1.5rem;
 }
+.icon-gallery {
+  display: flex;
+  align-items: center;
+  gap: var(--nx-spacing-4);
+  color: var(--nx-color-text-primary);
+}
+
+.icon-gallery > span,
+.icon-gallery > button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nx-spacing-2);
+}

@@ -1,4 +1,4 @@
-@import '../../design-tokens/src/index.css';
+@import '@nexora/design-tokens';
 
 * {
   box-sizing: border-box;

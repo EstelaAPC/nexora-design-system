@@ -2,10 +2,62 @@
   "name": "@nexora/icons",
   "version": "0.1.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./check": {
+      "types": "./dist/icons/check.d.ts",
+      "import": "./dist/check.js"
+    },
+    "./close": {
+      "types": "./dist/icons/close.d.ts",
+      "import": "./dist/close.js"
+    },
+    "./plus": {
+      "types": "./dist/icons/plus.d.ts",
+      "import": "./dist/plus.js"
+    },
+    "./minus": {
+      "types": "./dist/icons/minus.d.ts",
+      "import": "./dist/minus.js"
+    },
+    "./chevron-down": {
+      "types": "./dist/icons/chevron-down.d.ts",
+      "import": "./dist/chevron-down.js"
+    },
+    "./chevron-up": {
+      "types": "./dist/icons/chevron-up.d.ts",
+      "import": "./dist/chevron-up.js"
+    },
+    "./arrow-left": {
+      "types": "./dist/icons/arrow-left.d.ts",
+      "import": "./dist/arrow-left.js"
+    },
+    "./arrow-right": {
+      "types": "./dist/icons/arrow-right.d.ts",
+      "import": "./dist/arrow-right.js"
+    },
+    "./info": {
+      "types": "./dist/icons/info.d.ts",
+      "import": "./dist/info.js"
+    },
+    "./warning": {
+      "types": "./dist/icons/warning.d.ts",
+      "import": "./dist/warning.js"
+    },
+    "./search": {
+      "types": "./dist/icons/search.d.ts",
+      "import": "./dist/search.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json"
   }
 }

@@ -21,6 +21,10 @@
   --nx-select-padding-inline: var(--nx-spacing-4);
   --nx-select-radius: var(--nx-radius-md);
 
+  --nx-icon-size-sm: var(--nx-spacing-4);
+  --nx-icon-size-md: var(--nx-spacing-5);
+  --nx-icon-size-lg: var(--nx-spacing-6);
+
   /* The switch track has a distinct compact geometry and thumb travel. */
   --nx-switch-track-width: calc(var(--nx-spacing-8) + var(--nx-spacing-3));
   --nx-switch-track-height: var(--nx-spacing-6);

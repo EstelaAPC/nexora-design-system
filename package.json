@@ -8,7 +8,7 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspace @nexora/design-tokens && npm run build --workspace @nexora/theme && npm run build --workspace @nexora/icons && npm run build --workspace @nexora/components && npm run build --workspace @nexora/playground",
     "lint": "eslint . --ext .ts,.js --max-warnings 0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
