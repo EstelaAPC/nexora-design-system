@@ -1,10 +1,13 @@
 # Nexora Design System
 
-Nexora is a framework-agnostic component library based on real Web Components, Lit, TypeScript, Shadow DOM, Design Tokens, and CSS Custom Properties.
+> 🚀 **Acesse a documentação online:**  
+> **[Nexora Design System Docs](https://estelaapc.github.io/nexora-design-system-docs/)**
 
-It is a reusable UI library — not a finished application — and its custom elements can be consumed from Vanilla JavaScript, Angular, React, Vue, or other web applications.
+Nexora is a framework-agnostic component library based on real **Web Components, Lit, TypeScript, Shadow DOM, Design Tokens, and CSS Custom Properties**.
 
-The Design System is publicly distributed through npm under the `@nexora-ds` organization.
+It is a reusable UI library — not a finished application — and its custom elements can be consumed from **Vanilla JavaScript, Angular, React, Vue, or other web applications**.
+
+The Design System is publicly distributed through **npm** under the `@nexora-ds` organization.
 
 ---
 
@@ -12,16 +15,28 @@ The Design System is publicly distributed through npm under the `@nexora-ds` org
 
 Nexora is distributed as four independent public npm packages:
 
-| Package | Description | Version |
-| --- | --- | --- |
-| `@nexora-ds/components` | Web Components library | `0.1.0` |
-| `@nexora-ds/design-tokens` | Primitive and semantic design tokens | `0.1.0` |
-| `@nexora-ds/theme` | Light/dark theme and shared styles | `0.1.0` |
-| `@nexora-ds/icons` | Icon utilities | `0.1.0` |
+| Package | Description | Version | NPM |
+| --- | --- | --- | --- |
+| `@nexora-ds/components` | Web Components library | `0.1.0` | [View on NPM](https://www.npmjs.com/package/@nexora-ds/components) |
+| `@nexora-ds/design-tokens` | Primitive and semantic design tokens | `0.1.0` | [View on NPM](https://www.npmjs.com/package/@nexora-ds/design-tokens) |
+| `@nexora-ds/theme` | Light/dark theme and shared styles | `0.1.0` | [View on NPM](https://www.npmjs.com/package/@nexora-ds/theme) |
+| `@nexora-ds/icons` | Icon utilities | `0.1.0` | [View on NPM](https://www.npmjs.com/package/@nexora-ds/icons) |
 
-All packages are publicly available through the npm registry.
+All packages are **publicly available through the npm registry**.
 
-### Installation
+### 📚 Documentation
+
+The complete documentation and interactive examples are available online:
+
+**[→ Open Nexora Design System Documentation](https://estelaapc.github.io/nexora-design-system-docs/)**
+
+### 📦 NPM Organization
+
+**[→ View Nexora Design System on NPM](https://www.npmjs.com/org/nexora-ds)**
+
+---
+
+## Installation
 
 Install the main component package:
 
