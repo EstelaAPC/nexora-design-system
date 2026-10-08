@@ -1,0 +1,37 @@
+{
+  "name": "nexora-design-system",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint . --ext .ts,.js --max-warnings 0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "dev": "npm run dev --workspace @nexora/playground",
+    "test:e2e": "node tests/button.e2e.mjs",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build -o docs/storybook-static"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.3.0",
+    "@storybook/web-components-vite": "^8.3.0",
+    "@types/node": "^22.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.16.0",
+    "@typescript-eslint/parser": "^8.16.0",
+    "axe-core": "^4.10.0",
+    "eslint": "^9.17.0",
+    "jsdom": "^25.0.0",
+    "lit": "^3.1.0",
+    "playwright": "^1.49.0",
+    "sass": "^1.83.0",
+    "storybook": "^8.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vitest": "^2.1.8"
+  }
+}

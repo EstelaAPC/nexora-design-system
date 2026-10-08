@@ -1,0 +1,169 @@
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* Primitive color tokens */
+  --nx-blue-50: #eef2ff;
+  --nx-blue-100: #e0e7ff;
+  --nx-blue-200: #c7d2fe;
+  --nx-blue-300: #a5b4fc;
+  --nx-blue-400: #818cf8;
+  --nx-blue-500: #6366f1;
+  --nx-blue-600: #4f46e5;
+  --nx-blue-700: #4338ca;
+  --nx-blue-800: #3730a3;
+  --nx-blue-900: #312e81;
+  --nx-neutral-0: #ffffff;
+  --nx-neutral-50: #f8fafc;
+  --nx-neutral-100: #f1f5f9;
+  --nx-neutral-200: #e2e8f0;
+  --nx-neutral-300: #cbd5e1;
+  --nx-neutral-400: #94a3b8;
+  --nx-neutral-500: #64748b;
+  --nx-neutral-600: #475569;
+  --nx-neutral-700: #334155;
+  --nx-neutral-800: #1e293b;
+  --nx-neutral-900: #0f172a;
+  --nx-green-600: #059669;
+  --nx-amber-600: #d97706;
+  --nx-red-600: #dc2626;
+  --nx-red-700: #b91c1c;
+
+  /* Semantic color tokens */
+  --nx-color-primary: var(--nx-blue-600);
+  --nx-color-primary-hover: var(--nx-blue-700);
+  --nx-color-primary-active: var(--nx-blue-800);
+  --nx-color-on-primary: var(--nx-neutral-0);
+  --nx-color-surface: var(--nx-neutral-0);
+  --nx-color-surface-subtle: var(--nx-neutral-50);
+  --nx-color-surface-hover: var(--nx-neutral-100);
+  --nx-color-text: var(--nx-neutral-900);
+  --nx-color-text-muted: var(--nx-neutral-600);
+  --nx-color-border: var(--nx-neutral-300);
+  --nx-color-focus-ring: var(--nx-blue-500);
+  --nx-color-secondary: var(--nx-neutral-0);
+  --nx-color-secondary-hover: var(--nx-neutral-100);
+  --nx-color-on-secondary: var(--nx-neutral-800);
+  --nx-color-outline: var(--nx-blue-600);
+  --nx-color-outline-hover: var(--nx-blue-50);
+  --nx-color-ghost: transparent;
+  --nx-color-ghost-hover: var(--nx-blue-50);
+  --nx-color-on-ghost: var(--nx-blue-700);
+  --nx-color-danger: var(--nx-red-600);
+  --nx-color-danger-hover: var(--nx-red-700);
+  --nx-color-on-danger: var(--nx-neutral-0);
+  --nx-color-disabled-surface: var(--nx-neutral-100);
+  --nx-color-disabled-text: var(--nx-neutral-500);
+  --nx-color-disabled-border: var(--nx-neutral-200);
+  --nx-color-success: var(--nx-green-600);
+  --nx-color-warning: var(--nx-amber-600);
+  --nx-color-info: #2563eb;
+
+  /* Typography tokens */
+  --nx-font-family-sans: 'Inter', 'Segoe UI', sans-serif;
+  --nx-font-family-mono: 'JetBrains Mono', monospace;
+  --nx-font-size-sm: 0.875rem;
+  --nx-font-size-md: 1rem;
+  --nx-font-size-lg: 1.125rem;
+  --nx-font-weight-medium: 500;
+  --nx-font-weight-semibold: 600;
+  --nx-control-height-sm: 2rem;
+  --nx-control-height-md: 2.75rem;
+  --nx-control-height-lg: 3.25rem;
+  --nx-border-width-thin: 1px;
+  --nx-border-width-focus: 3px;
+  --nx-motion-duration-reduced: 0.001ms;
+  --nx-motion-duration-fast: 150ms;
+  --nx-motion-duration-spinner: 700ms;
+  --nx-motion-easing-spinner: linear;
+  --nx-line-height-control: 1;
+
+  /* Spacing, radius, elevation, and motion tokens */
+  --nx-spacing-1: 0.25rem;
+  --nx-spacing-2: 0.5rem;
+  --nx-spacing-3: 0.75rem;
+  --nx-spacing-4: 1rem;
+  --nx-spacing-5: 1.25rem;
+  --nx-spacing-6: 1.5rem;
+  --nx-spacing-8: 2rem;
+  --nx-radius-sm: 0.25rem;
+  --nx-radius-md: 0.5rem;
+  --nx-radius-lg: 0.75rem;
+  --nx-radius-pill: 999px;
+  --nx-elevation-button: 0 1px 2px rgb(15 23 42 / 8%);
+  --nx-motion-duration-fast: 150ms;
+  --nx-motion-easing-standard: ease;
+  --nx-elevation-focus-ring: 0 0 0 3px rgb(99 102 241 / 35%);
+
+  /* Compatibility aliases for the initial component set */
+  --nx-color-brand-50: var(--nx-blue-50);
+  --nx-color-brand-100: var(--nx-blue-100);
+  --nx-color-brand-200: var(--nx-blue-200);
+  --nx-color-brand-300: var(--nx-blue-300);
+  --nx-color-brand-400: var(--nx-blue-400);
+  --nx-color-brand-500: var(--nx-blue-500);
+  --nx-color-brand-600: var(--nx-blue-600);
+  --nx-color-brand-700: var(--nx-blue-700);
+  --nx-color-brand-800: var(--nx-blue-800);
+  --nx-color-brand-900: var(--nx-blue-900);
+  --nx-color-success-500: var(--nx-color-success);
+  --nx-color-warning-500: var(--nx-color-warning);
+  --nx-color-danger-500: var(--nx-color-danger);
+  --nx-color-info-500: var(--nx-color-info);
+  --nx-color-neutral-0: var(--nx-neutral-0);
+  --nx-color-neutral-50: var(--nx-neutral-50);
+  --nx-color-neutral-100: var(--nx-neutral-100);
+  --nx-color-neutral-200: var(--nx-neutral-200);
+  --nx-color-neutral-300: var(--nx-neutral-300);
+  --nx-color-neutral-400: var(--nx-neutral-400);
+  --nx-color-neutral-500: var(--nx-neutral-500);
+  --nx-color-neutral-600: var(--nx-neutral-600);
+  --nx-color-neutral-700: var(--nx-neutral-700);
+  --nx-color-neutral-800: var(--nx-neutral-800);
+  --nx-color-neutral-900: var(--nx-neutral-900);
+  --nx-font-sans: var(--nx-font-family-sans);
+  --nx-font-mono: var(--nx-font-family-mono);
+  --nx-space-1: var(--nx-spacing-1);
+  --nx-space-2: var(--nx-spacing-2);
+  --nx-space-3: var(--nx-spacing-3);
+  --nx-space-4: var(--nx-spacing-4);
+  --nx-space-5: var(--nx-spacing-5);
+  --nx-space-6: var(--nx-spacing-6);
+  --nx-space-8: var(--nx-spacing-8);
+  --nx-space-10: 2.5rem;
+  --nx-shadow-sm: var(--nx-elevation-button);
+  --nx-shadow-md: 0 10px 30px rgb(15 23 42 / 14%);
+  --nx-shadow-lg: 0 20px 60px rgb(15 23 42 / 18%);
+  --nx-transition-fast: var(--nx-motion-duration-fast) var(--nx-motion-easing-standard);
+  --nx-transition-medium: 250ms var(--nx-motion-easing-standard);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --nx-color-primary: #a5b4fc;
+  --nx-color-primary-hover: #c7d2fe;
+  --nx-color-primary-active: #e0e7ff;
+  --nx-color-on-primary: #1e1b4b;
+  --nx-color-surface: #0f172a;
+  --nx-color-surface-subtle: #111c32;
+  --nx-color-surface-hover: #1e293b;
+  --nx-color-text: #f8fafc;
+  --nx-color-text-muted: #cbd5e1;
+  --nx-color-border: #475569;
+  --nx-color-focus-ring: #a5b4fc;
+  --nx-color-secondary: #1e293b;
+  --nx-color-secondary-hover: #334155;
+  --nx-color-on-secondary: #f8fafc;
+  --nx-color-outline: #a5b4fc;
+  --nx-color-outline-hover: #312e81;
+  --nx-color-ghost-hover: #312e81;
+  --nx-color-on-ghost: #c7d2fe;
+  --nx-color-danger: #f87171;
+  --nx-color-danger-hover: #ef4444;
+  --nx-color-on-danger: #450a0a;
+  --nx-color-disabled-surface: #1e293b;
+  --nx-color-disabled-text: #94a3b8;
+  --nx-color-disabled-border: #334155;
+  --nx-elevation-button: 0 1px 2px rgb(0 0 0 / 30%);
+  --nx-elevation-focus-ring: 0 0 0 3px rgb(165 180 252 / 40%);
+}

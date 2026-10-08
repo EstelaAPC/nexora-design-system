@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "types": ["vitest/globals", "node"],
+    "baseUrl": "."
+  },
+  "include": [
+    "packages/**/*",
+    "apps/**/*",
+    "tests/**/*",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
+}

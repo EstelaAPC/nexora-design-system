@@ -1,0 +1,43 @@
+@import '../../design-tokens/src/index.css';
+
+:root {
+  --nx-surface: var(--nx-color-surface);
+  --nx-surface-subtle: var(--nx-color-surface-subtle);
+  --nx-surface-muted: var(--nx-color-surface-hover);
+  --nx-text: var(--nx-color-text);
+  --nx-text-soft: var(--nx-color-text-muted);
+  --nx-border: var(--nx-color-border);
+  --nx-focus-ring: var(--nx-color-focus-ring);
+  --nx-font-family: var(--nx-font-family-sans);
+  --nx-content-max-width: 1200px;
+}
+
+[data-theme='dark'] {
+  --nx-surface: var(--nx-color-surface);
+  --nx-surface-subtle: var(--nx-color-surface-subtle);
+  --nx-surface-muted: var(--nx-color-surface-hover);
+  --nx-text: var(--nx-color-text);
+  --nx-text-soft: var(--nx-color-text-muted);
+  --nx-border: var(--nx-color-border);
+  --nx-focus-ring: var(--nx-color-focus-ring);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--nx-font-family);
+  background: var(--nx-surface-subtle);
+  color: var(--nx-text);
+}
+
+body {
+  margin: 0;
+  background: var(--nx-surface-subtle);
+  color: var(--nx-text);
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
