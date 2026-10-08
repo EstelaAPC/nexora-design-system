@@ -22,7 +22,7 @@ The Nexora button is a native \`<button>\` inside a Lit custom element. It prese
 
 Properties: \`variant\` (primary, secondary, outline, ghost, danger), \`size\` (sm, md, lg), \`disabled\`, \`loading\`, \`fullWidth\`, and \`type\` (button, submit, reset).
 
-Usage: \`import '@nexora/components/button';\` followed by \`<nx-button variant="primary">Save</nx-button>\`.
+Usage: \`import '@nexora-ds/components/button';\` followed by \`<nx-button variant="primary">Save</nx-button>\`.
         `
       }
     }

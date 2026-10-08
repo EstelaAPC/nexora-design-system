@@ -1,6 +1,6 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { IconName } from '@nexora/icons';
+import type { IconName } from '@nexora-ds/icons';
 import '../icon/icon';
 
 export type NxIconButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';

@@ -1,5 +1,5 @@
 {
-  "name": "@nexora/theme",
+  "name": "@nexora-ds/theme",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.css",
@@ -8,7 +8,7 @@
     "build": "node build.mjs"
   },
   "dependencies": {
-    "@nexora/design-tokens": "*"
+    "@nexora-ds/design-tokens": "0.1.0"
   },
   "exports": {
     ".": "./dist/index.css"

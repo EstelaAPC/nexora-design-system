@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import type { IconName } from '@nexora/icons';
+import type { IconName } from '@nexora-ds/icons';
 import type { NxIconButton, NxIconButtonSize, NxIconButtonVariant } from '../../packages/components/src/icon-button/icon-button';
 
 type IconButtonArgs = {

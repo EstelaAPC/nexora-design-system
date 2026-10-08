@@ -7,6 +7,8 @@ export default defineConfig({
       entry: {
         index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
         button: fileURLToPath(new URL('./src/button/button.ts', import.meta.url)),
+        badge: fileURLToPath(new URL('./src/badge/badge.ts', import.meta.url)),
+        card: fileURLToPath(new URL('./src/card/card.ts', import.meta.url)),
         input: fileURLToPath(new URL('./src/input/input.ts', import.meta.url)),
         textarea: fileURLToPath(new URL('./src/textarea/textarea.ts', import.meta.url)),
         checkbox: fileURLToPath(new URL('./src/checkbox/checkbox.ts', import.meta.url)),
@@ -30,7 +32,7 @@ export default defineConfig({
       formats: ['es']
     },
     rollupOptions: {
-      external: ['lit', /^@nexora\/icons(?:\/.*)?$/]
+      external: ['lit', /^@nexora-ds\/icons(?:\/.*)?$/]
     }
   }
 });

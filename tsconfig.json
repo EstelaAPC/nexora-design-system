@@ -14,8 +14,8 @@
     "types": ["vitest/globals", "node"],
     "baseUrl": ".",
     "paths": {
-      "@nexora/icons": ["packages/icons/src/index.ts"],
-      "@nexora/icons/*": ["packages/icons/src/icons/*"]
+      "@nexora-ds/icons": ["packages/icons/src/index.ts"],
+      "@nexora-ds/icons/*": ["packages/icons/src/icons/*"]
     }
   },
   "include": [

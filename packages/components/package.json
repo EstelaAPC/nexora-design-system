@@ -1,5 +1,5 @@
 {
-  "name": "@nexora/components",
+  "name": "@nexora-ds/components",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,6 +18,14 @@
     "./input": {
       "types": "./dist/input/input.d.ts",
       "import": "./dist/input.js"
+    },
+    "./badge": {
+      "types": "./dist/badge/badge.d.ts",
+      "import": "./dist/badge.js"
+    },
+    "./card": {
+      "types": "./dist/card/card.d.ts",
+      "import": "./dist/card.js"
     },
     "./textarea": {
       "types": "./dist/textarea/textarea.d.ts",
@@ -97,9 +105,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@nexora/design-tokens": "*",
-    "@nexora/icons": "*",
-    "@nexora/theme": "*",
+    "@nexora-ds/design-tokens": "0.1.0",
+    "@nexora-ds/icons": "0.1.0",
+    "@nexora-ds/theme": "0.1.0",
     "lit": "^3.1.0"
   }
 }

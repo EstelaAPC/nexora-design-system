@@ -24,15 +24,15 @@ The playground demonstrates the public components across actions, feedback, navi
 ## Consuming the button
 
 ```js
-import '@nexora/theme';
-import '@nexora/components/button';
+import '@nexora-ds/theme';
+import '@nexora-ds/components/button';
 
 document.body.innerHTML = `
   <nx-button variant="primary" size="md">Save changes</nx-button>
 `;
 ```
 
-Import `@nexora/components` to register all currently available components. Include `@nexora/theme` (or the design-token stylesheet) in the document to provide the design token custom properties consumed by components.
+Import `@nexora-ds/components` to register all currently available components. Include `@nexora-ds/theme` (or the design-token stylesheet) in the document to provide the design token custom properties consumed by components.
 
 `nx-button` API:
 
@@ -47,13 +47,13 @@ Import `@nexora/components` to register all currently available components. Incl
 
 The button renders a native button, so click and keyboard activation retain browser behavior. Loading disables interaction, exposes `aria-busy`, and keeps slotted button text available as the accessible name. No component-specific click event is added.
 
-`nx-icon` renders named SVG path data from `@nexora/icons` inside its Shadow DOM. Icons are decorative and hidden from assistive technology by default; set `aria-label` or `title` to expose an icon as a named image. The `name` values are `check`, `close`, `plus`, `minus`, `chevron-down`, `chevron-up`, `arrow-left`, `arrow-right`, `info`, `warning`, and `search`. The `size` values are `sm`, `md`, and `lg`; consumers can override size with `--nx-icon-size` and color with the inherited CSS `color`. Unknown names render no SVG without throwing. Each icon is available from its own `@nexora/icons/<name>` ESM subpath so bundlers can split or tree-shake the icon modules.
+`nx-icon` renders named SVG path data from `@nexora-ds/icons` inside its Shadow DOM. Icons are decorative and hidden from assistive technology by default; set `aria-label` or `title` to expose an icon as a named image. The `name` values are `check`, `close`, `plus`, `minus`, `chevron-down`, `chevron-up`, `arrow-left`, `arrow-right`, `info`, `warning`, and `search`. The `size` values are `sm`, `md`, and `lg`; consumers can override size with `--nx-icon-size` and color with the inherited CSS `color`. Unknown names render no SVG without throwing. Each icon is available from its own `@nexora-ds/icons/<name>` ESM subpath so bundlers can split or tree-shake the icon modules.
 
-`nx-icon-button` composes a native button with `nx-icon`; its icon is always decorative, and consumers must provide a meaningful `aria-label` (a development warning is emitted when it is missing). It supports `type="button|submit|reset"` (default `button`), `disabled`, sizes `sm|md|lg`, and variants `primary|secondary|ghost|danger`. It uses the corresponding `nx-button` height, focus, and radius tokens; `--nx-icon-button-radius` can override its radius independently. Import it with `@nexora/components/icon-button`.
+`nx-icon-button` composes a native button with `nx-icon`; its icon is always decorative, and consumers must provide a meaningful `aria-label` (a development warning is emitted when it is missing). It supports `type="button|submit|reset"` (default `button`), `disabled`, sizes `sm|md|lg`, and variants `primary|secondary|ghost|danger`. It uses the corresponding `nx-button` height, focus, and radius tokens; `--nx-icon-button-radius` can override its radius independently. Import it with `@nexora-ds/components/icon-button`.
 
 ## Feedback and navigation
 
-Import individual components from their granular package subpaths (for example, `@nexora/components/alert`) or use the package root to register all components.
+Import individual components from their granular package subpaths (for example, `@nexora-ds/components/alert`) or use the package root to register all components.
 
 | Component | Public API and behavior |
 | --- | --- |

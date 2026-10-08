@@ -1,5 +1,5 @@
 {
-  "name": "@nexora/design-tokens",
+  "name": "@nexora-ds/design-tokens",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.css",

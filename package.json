@@ -8,11 +8,11 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace @nexora/design-tokens && npm run build --workspace @nexora/theme && npm run build --workspace @nexora/icons && npm run build --workspace @nexora/components && npm run build --workspace @nexora/playground",
+    "build": "npm run build --workspace @nexora-ds/design-tokens && npm run build --workspace @nexora-ds/theme && npm run build --workspace @nexora-ds/icons && npm run build --workspace @nexora-ds/components && npm run build --workspace @nexora-ds/playground",
     "lint": "eslint . --ext .ts,.js --max-warnings 0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "dev": "npm run dev --workspace @nexora/playground",
+    "dev": "npm run dev --workspace @nexora-ds/playground",
     "test:e2e": "node tests/button.e2e.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build -o docs/storybook-static"

@@ -1,5 +1,5 @@
 {
-  "name": "@nexora/playground",
+  "name": "@nexora-ds/playground",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@nexora/components": "*",
-    "@nexora/theme": "*"
+    "@nexora-ds/components": "0.1.0",
+    "@nexora-ds/theme": "0.1.0"
   }
 }

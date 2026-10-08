@@ -4,7 +4,7 @@
 
 Nexora components are browser Custom Elements prefixed with `nx-`. Lit supplies typed reactive properties, lifecycle management, and declarative templates; it does not replace the platform element or require a framework runtime. Components use Shadow DOM to encapsulate implementation markup and component CSS while inheriting CSS custom properties from their host/document.
 
-The components package has a package-root entry (`@nexora/components`) and a granular entry for each public component. The package build emits JavaScript entries and declaration files. Consumers can import one registration module for tree-shaking and reduced startup work, or import the root to register all components.
+The components package has a package-root entry (`@nexora-ds/components`) and a granular entry for each public component. The package build emits JavaScript entries and declaration files. Consumers can import one registration module for tree-shaking and reduced startup work, or import the root to register all components.
 
 `nx-icon-button` is a granular entry that registers and composes `nx-icon`; it consumes the public icon-name API and does not access SVG assets directly.
 
@@ -18,7 +18,7 @@ The public component API consists of custom elements, HTML attributes/properties
 
 ## Design tokens and themes
 
-`@nexora/design-tokens` exposes one stylesheet entry organized into primitive, semantic, and component token layers. Components consume CSS custom properties rather than embedding design-system colors, spacing, radius, typography, elevation, or motion choices. Component tokens are limited to genuine component-specific settings (currently button geometry and typography) and derive from shared scales. `@nexora/theme` loads the token entry and applies baseline document styles. Light is the default. Setting `data-theme="dark"` on the document root or an ancestor switches semantic color tokens, including button colors, without re-registering the element. Consumers may override semantic or primitive tokens globally, or scope overrides to a subtree.
+`@nexora-ds/design-tokens` exposes one stylesheet entry organized into primitive, semantic, and component token layers. Components consume CSS custom properties rather than embedding design-system colors, spacing, radius, typography, elevation, or motion choices. Component tokens are limited to genuine component-specific settings (currently button geometry and typography) and derive from shared scales. `@nexora-ds/theme` loads the token entry and applies baseline document styles. Light is the default. Setting `data-theme="dark"` on the document root or an ancestor switches semantic color tokens, including button colors, without re-registering the element. Consumers may override semantic or primitive tokens globally, or scope overrides to a subtree.
 
 ## Button behavior and events
 

@@ -1,21 +1,21 @@
 import { LitElement, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { IconDefinition, IconName } from '@nexora/icons';
+import type { IconDefinition, IconName } from '@nexora-ds/icons';
 
 type IconLoader = () => Promise<IconDefinition>;
 
 const iconLoaders = new Map<IconName, IconLoader>([
-  ['check', () => import('@nexora/icons/check').then(({ check }) => check)],
-  ['close', () => import('@nexora/icons/close').then(({ close }) => close)],
-  ['plus', () => import('@nexora/icons/plus').then(({ plus }) => plus)],
-  ['minus', () => import('@nexora/icons/minus').then(({ minus }) => minus)],
-  ['chevron-down', () => import('@nexora/icons/chevron-down').then(({ chevronDown }) => chevronDown)],
-  ['chevron-up', () => import('@nexora/icons/chevron-up').then(({ chevronUp }) => chevronUp)],
-  ['arrow-left', () => import('@nexora/icons/arrow-left').then(({ arrowLeft }) => arrowLeft)],
-  ['arrow-right', () => import('@nexora/icons/arrow-right').then(({ arrowRight }) => arrowRight)],
-  ['info', () => import('@nexora/icons/info').then(({ info }) => info)],
-  ['warning', () => import('@nexora/icons/warning').then(({ warning }) => warning)],
-  ['search', () => import('@nexora/icons/search').then(({ search }) => search)]
+  ['check', () => import('@nexora-ds/icons/check').then(({ check }) => check)],
+  ['close', () => import('@nexora-ds/icons/close').then(({ close }) => close)],
+  ['plus', () => import('@nexora-ds/icons/plus').then(({ plus }) => plus)],
+  ['minus', () => import('@nexora-ds/icons/minus').then(({ minus }) => minus)],
+  ['chevron-down', () => import('@nexora-ds/icons/chevron-down').then(({ chevronDown }) => chevronDown)],
+  ['chevron-up', () => import('@nexora-ds/icons/chevron-up').then(({ chevronUp }) => chevronUp)],
+  ['arrow-left', () => import('@nexora-ds/icons/arrow-left').then(({ arrowLeft }) => arrowLeft)],
+  ['arrow-right', () => import('@nexora-ds/icons/arrow-right').then(({ arrowRight }) => arrowRight)],
+  ['info', () => import('@nexora-ds/icons/info').then(({ info }) => info)],
+  ['warning', () => import('@nexora-ds/icons/warning').then(({ warning }) => warning)],
+  ['search', () => import('@nexora-ds/icons/search').then(({ search }) => search)]
 ]);
 
 let nextIconId = 0;

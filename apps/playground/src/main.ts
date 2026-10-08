@@ -1,5 +1,5 @@
-import '@nexora/theme';
-import '@nexora/components';
+import '@nexora-ds/theme';
+import '@nexora-ds/components';
 import './styles.css';
 
 const app = document.querySelector('#app');

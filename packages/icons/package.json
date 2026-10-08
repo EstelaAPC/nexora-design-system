@@ -1,5 +1,5 @@
 {
-  "name": "@nexora/icons",
+  "name": "@nexora-ds/icons",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
